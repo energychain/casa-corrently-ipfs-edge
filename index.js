@@ -43,8 +43,9 @@ module.exports = function() {
           chunks.push(chunk);
         }
         */
-        let res = await ipfs.files.ls('/community/'+cid+'/');
-        console.log(res);
+        for await (const file of ipfs.files.ls('/community/'+cid+'/')) {
+                console.log(file.name)
+        }
         return '';
       }
     }
