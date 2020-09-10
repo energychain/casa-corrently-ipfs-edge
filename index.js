@@ -10,7 +10,7 @@ let msgcids = {};
 let ipfs = null;
 
 const _publishMsg = async function(msg) {
-    const stats = await ipfs.files.add(JSON.stringify(msg));
+    const stats = await ipfs.add({path:'/msg',content:JSON.stringify(msg)});
     const addr = '' + stats.cid.toString()+'';
     const res = await ipfs.name.publish(addr);
     const resolve = await ipfs.name.resolve('/ipns/'+res.name,{recursive:true});
