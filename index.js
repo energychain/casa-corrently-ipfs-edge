@@ -67,7 +67,7 @@ module.exports = function(config) {
       },
       statics:async function() {
           if(ipfs == null) await _ipfs_init(config);
-      }
+      },
       publish: async function(msg) {
           if(ipfs == null) await _ipfs_init(config);
           await _publishMsg(msg);
