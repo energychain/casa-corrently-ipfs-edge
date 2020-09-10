@@ -46,9 +46,13 @@ module.exports = function() {
             }
         }
         let content = '';
-        for await (const chunk of ipfs.cat('/ipfs/'+fcid)) {
-              console.info(chunk);
-              content +=chunk;
+        try {
+          for await (const chunk of ipfs.cat('/ipfs/'+fcid)) {
+                console.info(chunk);
+                content +=chunk;
+          }
+        } catch(e) {
+
         }
         return content;
       }
