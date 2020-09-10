@@ -8,6 +8,7 @@ const topic = 'casa-corrently-beta';
 let ipfs = null;
 
 const _publishMsg = async function(msg) {
+    await ipfs.files.rm('/msg');
     await ipfs.files.write('/msg',
       JSON.stringify(msg),
       {create:true,parents:true});
@@ -28,8 +29,9 @@ module.exports = function() {
               ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
               const receiveMsg = (msg) => {
                 let json = JSON.parse(msg.data.toString());
+                ipfs.files.rm('/community/'+msg.from+'/msg');
                 ipfs.files.cp('/ipfs/'+json.at,'/community/'+msg.from,{create:true,parents:true});
-                console.log('/community/'+msg.from);
+                console.log('Received: /community/'+msg.from);
               };
               await ipfs.pubsub.subscribe(topic, receiveMsg)
             } catch(e) {}
@@ -37,16 +39,18 @@ module.exports = function() {
           await _publishMsg(msg);
       },
       retrieve: async function(cid) {
-        /*
-        const chunks = [];
-        for await (const chunk of ipfs.files.read('/community/'+cid+'/msg')) {
-          chunks.push(chunk);
-        }
-        */
+        let fcid = '';
         for await (const file of ipfs.files.ls('/community/'+cid+'/')) {
-                console.log(file.name)
+            if(file.name == 'msg') {
+              fcid = file.cid;
+            }
         }
-        return '';
+        let content = '';
+        for await (const chunk of ipfs.cat('/ipfs/'+fcid)) {
+              console.info(chunk);
+              content +=chunk;
+        }
+        return content;
       }
     }
 };
