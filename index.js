@@ -29,7 +29,6 @@ module.exports = function() {
                 let json = JSON.parse(msg.data.toString());
                 msgcids[msg.from] = json.at;
                 await ipfs.cat('/ipfs/'+json.at);
-                console.log('pub from ',msg.from);
               };
               await ipfs.pubsub.subscribe(topic, receiveMsg)
             } catch(e) {
@@ -39,17 +38,16 @@ module.exports = function() {
           await _publishMsg(msg);
       },
       retrieve: async function(cid) {
-        console.log(msgcids);
-        if(typeof msgcids[cid] == 'undefined') return; else {
+        if(typeof msgcids[cid] == 'undefined') return {}; else {
             let fcid = '';
             let content = '';
             try {
               for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid])) {
-                    console.log('/ipfs/'+msgcids[cid],chunk.toString());
                     content +=chunk;
               }
+              content = JSON.parse(content);
             } catch(e) {
-
+              content = {};
             }
             return content;
         }
