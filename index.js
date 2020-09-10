@@ -41,7 +41,7 @@ module.exports = function() {
         for await (const chunk of ipfs.files.read('/community/'+cid+'/msg')) {
           chunks.push(chunk);
         }
-        return uint8ArrayConcat(chunks).toString();
+        return chunks.concat();
       }
     }
 };
