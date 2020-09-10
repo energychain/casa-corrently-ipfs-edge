@@ -41,6 +41,7 @@ module.exports = function() {
       retrieve: async function(cid) {
         if(typeof msgcids[cid] == 'undefined') return; else {
             let fcid = '';
+            let content = '';
             try {
               for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid])) {
                     console.info(chunk);
