@@ -37,11 +37,15 @@ module.exports = function() {
           await _publishMsg(msg);
       },
       retrieve: async function(cid) {
+        /*
         const chunks = [];
         for await (const chunk of ipfs.files.read('/community/'+cid+'/msg')) {
           chunks.push(chunk);
         }
-        return chunks.concat();
+        */
+        let res = await ipfs.files.ls('/community/'+cid+'/');
+        console.log(res);
+        return '';
       }
     }
 };
