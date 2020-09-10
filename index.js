@@ -5,10 +5,11 @@ const fs = require("fs");
 const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
 const multiaddr = require("multiaddr");
 const topic = 'casa-corrently-beta';
+let msgcids = {};
+
 let ipfs = null;
 
 const _publishMsg = async function(msg) {
-    await ipfs.files.rm('/msg');
     await ipfs.files.write('/msg',
       JSON.stringify(msg),
       {create:true,parents:true});
@@ -29,9 +30,8 @@ module.exports = function() {
               ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
               const receiveMsg = (msg) => {
                 let json = JSON.parse(msg.data.toString());
-                ipfs.files.rm('/community/'+msg.from+'/msg');
-                ipfs.files.cp('/ipfs/'+json.at,'/community/'+msg.from,{create:true,parents:true});
-                console.log('Received: /community/'+msg.from);
+                msgcids[msg.from] = json.at;
+                ipfs.cat('/ipfs/'+json.at);
               };
               await ipfs.pubsub.subscribe(topic, receiveMsg)
             } catch(e) {}
@@ -39,22 +39,18 @@ module.exports = function() {
           await _publishMsg(msg);
       },
       retrieve: async function(cid) {
-        let fcid = '';
-        for await (const file of ipfs.files.ls('/community/'+cid+'/')) {
-            if(file.name == 'msg') {
-              fcid = file.cid;
-            }
-        }
-        let content = '';
-        try {
-          for await (const chunk of ipfs.cat('/ipfs/'+fcid)) {
-                console.info(chunk);
-                content +=chunk;
-          }
-        } catch(e) {
+        if(typeof msgcids[cid] == 'undefined') return; else {
+            let fcid = '';
+            try {
+              for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid])) {
+                    console.info(chunk);
+                    content +=chunk;
+              }
+            } catch(e) {
 
+            }
+            return content;
         }
-        return content;
       }
     }
 };

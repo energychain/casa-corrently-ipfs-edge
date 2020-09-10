@@ -27,8 +27,8 @@ const boot = async function() {
         await publisher.publish(await meterLib(msg,config,storage));
       },60000);
       setInterval(async function() {
-        console.log(JSON.parse(await publisher.retrieve('QmU14oFSdrfRmJb4U7ygeb6Q5fbGi9rRb89bmWxPm74bhV')));
-        console.log(JSON.parse(await publisher.retrieve('QmRXzciq9PgA5E2mVD8osxU9u4tim7hLNxi3gaZwfYhxGJ')));
+        console.log(await publisher.retrieve('QmU14oFSdrfRmJb4U7ygeb6Q5fbGi9rRb89bmWxPm74bhV'));
+        console.log(await publisher.retrieve('QmRXzciq9PgA5E2mVD8osxU9u4tim7hLNxi3gaZwfYhxGJ'));
       },10000);
       console.log("done");
 };
