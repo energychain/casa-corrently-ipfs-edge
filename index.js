@@ -28,13 +28,16 @@ module.exports = function() {
             ipfs = await IPFS.create();
             try {
               ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
-              const receiveMsg = (msg) => {
+              const receiveMsg = async (msg) => {
                 let json = JSON.parse(msg.data.toString());
                 msgcids[msg.from] = json.at;
-                ipfs.cat('/ipfs/'+json.at);
+                await ipfs.cat('/ipfs/'+json.at);
+                console.log('pub from ',msg.from);
               };
               await ipfs.pubsub.subscribe(topic, receiveMsg)
-            } catch(e) {}
+            } catch(e) {
+              console.log(e);
+            }
           }
           await _publishMsg(msg);
       },
@@ -44,7 +47,7 @@ module.exports = function() {
             let content = '';
             try {
               for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid])) {
-                    console.info(chunk);
+                    console.log('/ipfs/'+msgcids[cid],chunk);
                     content +=chunk;
               }
             } catch(e) {
