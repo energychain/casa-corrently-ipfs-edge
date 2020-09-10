@@ -10,10 +10,7 @@ let msgcids = {};
 let ipfs = null;
 
 const _publishMsg = async function(msg) {
-    await ipfs.files.write('/msg',
-      JSON.stringify(msg),
-      {create:true,parents:true});
-    const stats = await ipfs.files.stat('/msg');
+    const stats = await ipfs.files.add(JSON.stringify(msg));
     const addr = '' + stats.cid.toString()+'';
     const res = await ipfs.name.publish(addr);
     const resolve = await ipfs.name.resolve('/ipns/'+res.name,{recursive:true});
@@ -48,7 +45,7 @@ module.exports = function() {
             let content = '';
             try {
               for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid])) {
-                    console.log('/ipfs/'+msgcids[cid],chunk);
+                    console.log('/ipfs/'+msgcids[cid],chunk.toString());
                     content +=chunk;
               }
             } catch(e) {
