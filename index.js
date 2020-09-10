@@ -61,9 +61,32 @@ const _ipfs_statics =  async function(path) {
 
 module.exports = function(config) {
     return {
-      info: async function() {
+      info: async function(req) {
         if(ipfs == null) await _ipfs_init(config);
-        return await ipfs.id();
+        if(typeof req.method == 'undefined') req.method = 'ls';
+
+        if(req.method == 'ls') {
+          return msgcids;
+        } else
+        if(req.method == 'self') {
+          return await ipfs.id();
+        } else
+        if(req.method == 'msg') {
+          let cid = req.peer;
+          if(typeof msgcids[cid] == 'undefined') return {}; else {
+              let fcid = '';
+              let content = '';
+              try {
+                for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid])) {
+                      content +=chunk;
+                }
+                content = JSON.parse(content);
+              } catch(e) {
+                content = {};
+              }
+              return content;
+          }
+        }
       },
       statics:async function() {
           if(ipfs == null) await _ipfs_init(config);
