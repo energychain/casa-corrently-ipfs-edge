@@ -17,27 +17,63 @@ const _publishMsg = async function(msg) {
     await ipfs.pubsub.publish(topic,JSON.stringify({at:addr}));
     return;
 }
+const _ipfs_init = async function(config) {
+  ipfs = await IPFS.create();
+  try {
+    // TODO: Add more peers to swarm to have a brilliant uptime
+    ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
+    const receiveMsg = async (msg) => {
+      let json = JSON.parse(msg.data.toString());
+      msgcids[msg.from] = json.at;
+      await ipfs.cat('/ipfs/'+json.at);
+    };
+    await ipfs.pubsub.subscribe(topic, receiveMsg)
+  } catch(e) {
+    console.log(e);
+  }
+  if((config !== null) && (typeof config.staticFiles !== 'undefined')) {
+    await _ipfs_statics(config.staticFiles);
+  }
+  return;
+}
 
-module.exports = function() {
-    return {
-      publish: async function(msg) {
-          if(ipfs == null) {
-            ipfs = await IPFS.create();
-            try {
-              ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
-              const receiveMsg = async (msg) => {
-                let json = JSON.parse(msg.data.toString());
-                msgcids[msg.from] = json.at;
-                await ipfs.cat('/ipfs/'+json.at);
-              };
-              await ipfs.pubsub.subscribe(topic, receiveMsg)
-            } catch(e) {
-              console.log(e);
-            }
+const _ipfs_statics =  async function(path) {
+    var getDirectories = function (src, callback) {
+      glob(src + '/**/*', callback);
+    };
+    getDirectories(path, async function (err, res) {
+      let files = [];
+      for(let i=0;i<res.length;i++) {
+        if(fileExists(res[i])) {
+          if(!fs.lstatSync(res[i]).isDirectory() ) {
+              try {
+                  await ipfs.files.write('/'+res[i].substr(('node_modules/casa-corrently/public/').length),
+                    fs.readFileSync(res[i]),
+                    {create:true,parents:true});
+              } catch(e) {
+              }
           }
+        }
+      }
+    });
+    return;
+}
+
+module.exports = function(config) {
+    return {
+      info: async function() {
+        if(ipfs == null) await _ipfs_init(config);
+        return await ipfs.id();
+      },
+      statics:async function() {
+          if(ipfs == null) await _ipfs_init(config);
+      }
+      publish: async function(msg) {
+          if(ipfs == null) await _ipfs_init(config);
           await _publishMsg(msg);
       },
       retrieve: async function(cid) {
+        if(ipfs == null) await _ipfs_init(config);
         if(typeof msgcids[cid] == 'undefined') return {}; else {
             let fcid = '';
             let content = '';
