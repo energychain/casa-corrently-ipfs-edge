@@ -22,6 +22,10 @@ const _ipfs_init = async function(config) {
   try {
     // TODO: Add more peers to swarm to have a brilliant uptime
     ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
+    ipfs.swarm.connect("/ip4/217.163.30.7/tcp/4001/p2p/Qmanvqjcisx3LP4z8gYaBP8Lyk15mSHdotNMEdXS8zP15B").catch(function(e) { console.log(e); });
+    ipfs.swarm.connect("/ip4/62.75.168.184/tcp/4001/p2p/QmeW92PaNQHJzFM1fJ97JmojmWvGCkyzp1VFj4RURcGZkv").catch(function(e) { console.log(e); });
+    ipfs.swarm.connect("/ip4/95.179.164.124/tcp/4001/p2p/QmesnMndaKtpmsTNVS1D54qdf7n6zjBCciT21ESMtaxBNh").catch(function(e) { console.log(e); });
+
     const receiveMsg = async (msg) => {
       let json = JSON.parse(msg.data.toString());
       const ipfsPath = '/ipfs/'+json.at;
@@ -85,7 +89,7 @@ module.exports = function(config) {
               content = JSON.parse(msgcids[cid].content);
               return content;
           }
-        }
+        }else return {};
       },
       statics:async function() {
           if(ipfs == null) await _ipfs_init(config);
