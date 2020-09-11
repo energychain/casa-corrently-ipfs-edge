@@ -1,6 +1,6 @@
 {
   "name": "casa-corrently-ipfs-edge",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Casa Corrently IPFS based Edge",
   "main": "index.js",
   "scripts": {
@@ -23,6 +23,10 @@
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/energychain/casa-corrently-ipfs-edge/issues"
+  },
+  "funding": {
+    "type": "corporation",
+    "url": "https://www.stromdao.de/crowdfunding/info"
   },
   "homepage": "https://github.com/energychain/casa-corrently-ipfs-edge#readme",
   "dependencies": {

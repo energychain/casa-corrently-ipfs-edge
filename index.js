@@ -24,7 +24,10 @@ const _ipfs_init = async function(config) {
     ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
     const receiveMsg = async (msg) => {
       let json = JSON.parse(msg.data.toString());
-      msgcids[msg.from] = json.at;
+      msgcids[msg.from] = {
+        "at":json.at,
+        "on":new Date().getTime()
+      }
       await ipfs.cat('/ipfs/'+json.at);
     };
     await ipfs.pubsub.subscribe(topic, receiveMsg)
@@ -101,7 +104,7 @@ module.exports = function(config) {
             let fcid = '';
             let content = '';
             try {
-              for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid])) {
+              for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid].at)) {
                     content +=chunk;
               }
               content = JSON.parse(content);
