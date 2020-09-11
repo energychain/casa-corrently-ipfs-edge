@@ -80,7 +80,7 @@ module.exports = function(config) {
               let fcid = '';
               let content = '';
               try {
-                for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid])) {
+                for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid].at)) {
                       content +=chunk;
                 }
                 content = JSON.parse(content);
