@@ -9,12 +9,13 @@ let msgcids = {};
 
 let ipfs = null;
 
-const _publishMsg = async function(msg) {
-    const stats = await ipfs.add({path:'/msg',content:JSON.stringify(msg)});
+const _publishMsg = async function(msg,alias) {
+    if(alias == null) alias = '';
+    const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
     const addr = '' + stats.cid.toString()+'';
     const res = await ipfs.name.publish(addr);
     const resolve = await ipfs.name.resolve('/ipns/'+res.name,{recursive:true});
-    await ipfs.pubsub.publish(topic,JSON.stringify({at:addr}));
+    await ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias}));
     return;
 }
 const _ipfs_init = async function(config) {
@@ -32,6 +33,9 @@ const _ipfs_init = async function(config) {
       let content = '';
       for await (const chunk of ipfs.cat(ipfsPath)) {
           content += chunk;
+      }
+      if(typeof json.alias !== 'undefined') {
+        msg.from = json.alias;
       }
       msgcids[msg.from] = {
         "at":json.at,
@@ -94,9 +98,9 @@ module.exports = function(config) {
       statics:async function() {
           if(ipfs == null) await _ipfs_init(config);
       },
-      publish: async function(msg) {
+      publish: async function(msg,alias) {
           if(ipfs == null) await _ipfs_init(config);
-          await _publishMsg(msg);
+          await _publishMsg(msg,alias);
       },
       retrieve: async function(cid) {
         if(ipfs == null) await _ipfs_init(config);
