@@ -31,7 +31,7 @@
   "homepage": "https://github.com/energychain/casa-corrently-ipfs-edge#readme",
   "dependencies": {
     "axios": "^0.20.0",
-    "casa-corrently": "^1.0.12",
+    "casa-corrently": "^1.0.14",
     "glob": "^7.1.6",
     "ipfs": "^0.48.2",
     "multiaddr": "^8.0.0"

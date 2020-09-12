@@ -20,8 +20,7 @@ const _publishMsg = async function(msg,alias) {
 }
 
 const _publishBroadcast = async function() {
-    if(alias == null) alias = '';
-    const stats = await ipfs.add({path:'/broadcast' + alias,content:JSON.stringify(msgcids)});
+    const stats = await ipfs.add({path:'/broadcast',content:JSON.stringify(msgcids)});
     const addr = '' + stats.cid.toString()+'';
     await ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr}));
     return;
