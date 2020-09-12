@@ -50,9 +50,9 @@ const _ipfs_init = async function(config) {
           msg.from = json.alias;
         }
         let isnew=true;
-        if(typeof mgcids[msg.from] !== 'undefined') {
+        if(typeof msgcids[msg.from] !== 'undefined') {
           if(typeof json.on !== 'undefined') {
-            if(json.on < mgcids[msg.from].on) {
+            if(json.on < msgcids[msg.from].on) {
               isnew=false;
             }
           }
