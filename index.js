@@ -18,6 +18,15 @@ const _publishMsg = async function(msg,alias) {
     await ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias}));
     return;
 }
+
+const _publishBroadcast = async function() {
+    if(alias == null) alias = '';
+    const stats = await ipfs.add({path:'/broadcast' + alias,content:JSON.stringify(msgcids)});
+    const addr = '' + stats.cid.toString()+'';
+    await ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr}));
+    return;
+}
+
 const _ipfs_init = async function(config) {
   ipfs = await IPFS.create();
   try {
@@ -26,21 +35,51 @@ const _ipfs_init = async function(config) {
     ipfs.swarm.connect("/ip4/217.163.30.7/tcp/4001/p2p/Qmanvqjcisx3LP4z8gYaBP8Lyk15mSHdotNMEdXS8zP15B").catch(function(e) { console.log(e); });
     ipfs.swarm.connect("/ip4/62.75.168.184/tcp/4001/p2p/QmeW92PaNQHJzFM1fJ97JmojmWvGCkyzp1VFj4RURcGZkv").catch(function(e) { console.log(e); });
     ipfs.swarm.connect("/ip4/95.179.164.124/tcp/4001/p2p/QmesnMndaKtpmsTNVS1D54qdf7n6zjBCciT21ESMtaxBNh").catch(function(e) { console.log(e); });
+    setInterval(_publishBroadcast,60000);
 
     const receiveMsg = async (msg) => {
       let json = JSON.parse(msg.data.toString());
-      const ipfsPath = '/ipfs/'+json.at;
-      let content = '';
-      for await (const chunk of ipfs.cat(ipfsPath)) {
-          content += chunk;
+
+      const parseSingle = async function(json) {
+        const ipfsPath = '/ipfs/'+json.at;
+        let content = '';
+        for await (const chunk of ipfs.cat(ipfsPath)) {
+            content += chunk;
+        }
+        if(typeof json.alias !== 'undefined') {
+          msg.from = json.alias;
+        }
+        let isnew=true;
+        if(typeof mgcids[msg.from] !== 'undefined') {
+          if(typeof json.on !== 'undefined') {
+            if(json.on < mgcids[msg.from].on) {
+              isnew=false;
+            }
+          }
+        }
+        if(isnew) {
+          msgcids[msg.from] = {
+            "at":json.at,
+            "on":new Date().getTime(),
+            "content":content
+          }
+        }
       }
-      if(typeof json.alias !== 'undefined') {
-        msg.from = json.alias;
+      if(typeof json.at !== 'undefined') {
+        await parseSingle(json);
       }
-      msgcids[msg.from] = {
-        "at":json.at,
-        "on":new Date().getTime(),
-        "content":content
+      if(typeof json.broadcast !== 'undefined') {
+        const ipfsPath = '/ipfs/'+json.broadcast;
+        let content = '';
+        for await (const chunk of ipfs.cat(ipfsPath)) {
+            content += chunk;
+        }
+        let rcids = JSON.parse(content);
+        for (const [key, value] of Object.entries(rcids)) {
+            json.alias = key;
+            json.at = value.at;
+            await parseSingle(json);
+        }
       }
     };
     await ipfs.pubsub.subscribe(topic, receiveMsg)
