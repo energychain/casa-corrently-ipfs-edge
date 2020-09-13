@@ -5,6 +5,7 @@ const fs = require("fs");
 const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
 const multiaddr = require("multiaddr");
 const topic = 'casa-corrently-beta';
+const IPFS_CAT_TIMEOUT=5000;
 let msgcids = {};
 let selfID='jkdfhhdf';
 let ipfs = null;
@@ -52,7 +53,7 @@ const _ipfs_init = async function(config) {
       const parseSingle = async function(json) {
         const ipfsPath = '/ipfs/'+json.at;
         let content = '';
-        for await (const chunk of ipfs.cat(ipfsPath)) {
+        for await (const chunk of ipfs.cat(ipfsPath,{timeout:IPFS_CAT_TIMEOUT})) {
             content += chunk;
         }
         let isnew=true;
@@ -85,7 +86,7 @@ const _ipfs_init = async function(config) {
       if(typeof json.broadcast !== 'undefined') {
         const ipfsPath = '/ipfs/'+json.broadcast;
         let content = '';
-        for await (const chunk of ipfs.cat(ipfsPath)) {
+        for await (const chunk of ipfs.cat(ipfsPath,{timeout:IPFS_CAT_TIMEOUT})) {
             content += chunk;
         }
 
@@ -164,7 +165,7 @@ module.exports = function(config) {
             let fcid = '';
             let content = '';
             try {
-              for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid].at)) {
+              for await (const chunk of ipfs.cat('/ipfs/'+msgcids[cid].at,{timeout:IPFS_CAT_TIMEOUT})) {
                     content +=chunk;
               }
               content = JSON.parse(content);
