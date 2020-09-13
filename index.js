@@ -47,36 +47,37 @@ const _ipfs_init = async function(config) {
       if(msg.from == selfID) return;
       let json = JSON.parse(msg.data.toString());
       console.log("Incomming Message",json);
+
       const parseSingle = async function(json) {
         const ipfsPath = '/ipfs/'+json.at;
         let content = '';
         for await (const chunk of ipfs.cat(ipfsPath)) {
             content += chunk;
         }
-        if(typeof json.alias !== 'undefined') {
-          msg.from = json.alias;
-        }
         let isnew=true;
-        if(typeof msgcids[msg.from] !== 'undefined') {
+        if(typeof msgcids[json.from] !== 'undefined') {
           if(typeof json.on !== 'undefined') {
-            if(json.on < msgcids[msg.from].on) {
+            if(json.on < msgcids[json.from].on) {
               isnew=false;
             }
           }
         }
         if(isnew) {
-          msgcids[msg.from] = {
+          msgcids[json.from] = {
             "at":json.at,
             "on":new Date().getTime(),
             "content":content
           }
-          console.log("Received New",msg.from);
+          console.log("Received New",json.from);
         } else {
-          console.log("Has newer",msg.from);
+          console.log("Received Old",json.from);
         }
       }
 
       if(typeof json.at !== 'undefined') {
+        if((typeof json.alias == 'undefined')||(json.alias.length < 10)) {
+          json.alias = msg.from;
+        }
         await parseSingle(json);
       }
       if(typeof json.broadcast !== 'undefined') {
