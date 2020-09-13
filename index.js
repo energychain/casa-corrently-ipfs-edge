@@ -18,9 +18,7 @@ const _publishMsg = async function(msg,alias) {
     if(alias == null) alias = '';
     const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
     const addr = '' + stats.cid.toString()+'';
-    const res = await ipfs.name.publish(addr);
-    const resolve = await ipfs.name.resolve('/ipns/'+res.name,{recursive:true});
-    await ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias}));
+    ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias}));
     lastMsg = new Date().getTime();
     return;
 }
@@ -28,7 +26,7 @@ const _publishMsg = async function(msg,alias) {
 const _publishBroadcast = async function() {
     const stats = await ipfs.add({path:'/broadcast',content:JSON.stringify(msgcids)});
     const addr = '' + stats.cid.toString()+'';
-    await ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr}));
+    ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr}));
     return;
 }
 
