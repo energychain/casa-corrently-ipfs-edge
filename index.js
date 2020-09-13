@@ -45,8 +45,9 @@ const _ipfs_init = async function(config) {
     },1000)
     const receiveMsg = async (msg) => {
       if(msg.from == selfID) return;
+
       let json = JSON.parse(msg.data.toString());
-      console.log("Incomming Message",json);
+      console.log("Incomming Message",json,msg.from);
 
       const parseSingle = async function(json) {
         const ipfsPath = '/ipfs/'+json.at;
@@ -55,28 +56,29 @@ const _ipfs_init = async function(config) {
             content += chunk;
         }
         let isnew=true;
-        if(typeof msgcids[json.from] !== 'undefined') {
+        if(typeof msgcids[json.alias] !== 'undefined') {
           if(typeof json.on !== 'undefined') {
-            if(json.on < msgcids[json.from].on) {
+            if(json.on < msgcids[json.alias].on) {
               isnew=false;
             }
           }
         }
         if(isnew) {
-          msgcids[json.from] = {
+          msgcids[json.alias] = {
             "at":json.at,
             "on":new Date().getTime(),
             "content":content
           }
-          console.log("Received New",json.from);
+          console.log("Received New",json.alias);
         } else {
-          console.log("Received Old",json.from);
+          console.log("Received Old",json.alias);
         }
       }
 
       if(typeof json.at !== 'undefined') {
         if((typeof json.alias == 'undefined')||(json.alias.length < 10)) {
           json.alias = msg.from;
+          json.from = msg.from;
         }
         await parseSingle(json);
       }
@@ -88,7 +90,6 @@ const _ipfs_init = async function(config) {
         }
 
         let rcids = JSON.parse(content);
-        console.log('Processing Broadcast',rcids);
         for (const [key, value] of Object.entries(rcids)) {
             if(key.length > 10) {
               json.alias = key;
