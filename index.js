@@ -5,7 +5,7 @@ module.exports = function(config) {
   let msgcids = {};
 
   const _ipfs_init = async function(config) {
-    ipfs_service = new Worker('../casa-corrently-ipfs-edge/ipfs_service.js',{workerData:config});
+    ipfs_service = new Worker('node_modules/casa-corrently-ipfs-edge/ipfs_service.js',{workerData:config});
     ipfs_service.on('message', function(_data) {
       if(typeof _data.msgcids !== 'undefined') {
         msgcids = _data.msgcids;
