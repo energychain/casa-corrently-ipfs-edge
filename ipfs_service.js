@@ -112,7 +112,7 @@
 
 
   // bootstrap
-  console.log('Bootstrap IPFS');
+  console.log('Bootstrap IPFS for Casa Corrently');
   await _ipfs_init(config);
   parentPort.on('message',function(data) {
     _publishMsg(data.msg,data.alias);
