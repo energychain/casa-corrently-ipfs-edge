@@ -84,14 +84,18 @@
               }
             }
           }
+
           if(isnew) {
-            msgcids[json.alias] = {
-              "at":json.at,
-              "on":new Date().getTime(),
-              "content":content
+            let _content = JSON.parse(content);
+            if(_content.time > new Date().getTime() - PURGE_AGE) {
+              msgcids[json.alias] = {
+                "at":json.at,
+                "on":new Date().getTime(),
+                "content":content
+              }
+              console.log("Received New",json.alias);
+              parentPort.postMessage({ msgcids, status: 'New' });
             }
-            console.log("Received New",json.alias);
-            parentPort.postMessage({ msgcids, status: 'New' });
           } else {
             console.log("Received Old",json.alias);
           }
