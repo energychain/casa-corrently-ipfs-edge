@@ -9,11 +9,13 @@
   const multiaddr = require("multiaddr");
   const topic = 'casa-corrently-beta';
   const IPFS_CAT_TIMEOUT=5000;
+  const PURGE_AGE=4*3600000;
   let msgcids = {};
   let selfID='jkdfhhdf';
   let ipfs = null;
   let lastMsg = 0;
   let lastBroadcast = new Date().getTime();
+
 
   const _publishMsg = async function(msg,alias) {
       if(lastMsg > new Date().getTime() - 60000) return;
@@ -26,6 +28,21 @@
       return;
   }
 
+  const _purgeCids = async function() {
+      let _cids = {};
+      let didpurge = false;
+      for (const [key, value] of Object.entries(msgcids)) {
+          let _content = JSON.parse(value.content);
+          if(_content.time > new Date().getTime() - PURGE_AGE) {
+            _cids[key] = value;
+          } else {
+            didpurge = true;
+          }
+      }
+      if(didpurge) {
+        msgcids=_cids;
+      }
+  }
   const _publishBroadcast = async function() {
       const stats = await ipfs.add({path:'/broadcast',content:JSON.stringify(msgcids)});
       const addr = '' + stats.cid.toString()+'';
@@ -42,6 +59,8 @@
       ipfs.swarm.connect("/ip4/62.75.168.184/tcp/4001/p2p/QmeW92PaNQHJzFM1fJ97JmojmWvGCkyzp1VFj4RURcGZkv").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/95.179.164.124/tcp/4001/p2p/QmesnMndaKtpmsTNVS1D54qdf7n6zjBCciT21ESMtaxBNh").catch(function(e) { console.log(e); });
       setInterval(_publishBroadcast,60000);
+      setInterval(_purgeCids,850123);
+
       setTimeout(async function() {
         selfID = await ipfs.id();
       },1000)
