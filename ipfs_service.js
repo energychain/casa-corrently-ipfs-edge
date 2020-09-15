@@ -8,7 +8,7 @@
   const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
   const multiaddr = require("multiaddr");
   const topic = 'casa-corrently-beta';
-  const IPFS_CAT_TIMEOUT=5000;
+  const IPFS_CAT_TIMEOUT=20000;
   const PURGE_AGE=4*3600000;
   let msgcids = {};
   let selfID='jkdfhhdf';
