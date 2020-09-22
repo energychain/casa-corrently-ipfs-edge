@@ -31,7 +31,7 @@
       if(alias == null) alias = '';
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
-      ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias}));
+      ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,db:'/orbitdb/'+db.address.root+'/'+db.address.path}));
       lastMsg = new Date().getTime();
       msg.community.uuid=alias;
       db.add(msg);
