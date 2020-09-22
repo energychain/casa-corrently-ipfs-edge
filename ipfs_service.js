@@ -34,10 +34,8 @@
       ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,db:'/orbitdb/'+db.address.root+'/'+db.address.path}));
       lastMsg = new Date().getTime();
       msg.community.uuid=alias;
-      async function() {
-        const hash = await db.add(msg);
-        console.log('msghash',hash);
-      };
+      const hash = await db.add(msg);
+      console.log('msghash',hash);
       return;
   }
 
