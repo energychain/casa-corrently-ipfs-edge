@@ -5,6 +5,7 @@
   const axios = require("axios");
   const glob = require("glob");
   const fs = require("fs");
+  const OrbitDB = require('orbit-db');
   const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
   const multiaddr = require("multiaddr");
   const topic = 'casa-corrently-beta';
@@ -13,9 +14,16 @@
   let msgcids = {};
   let selfID='jkdfhhdf';
   let ipfs = null;
+  let orbitdb = null;
+  let db = null;
   let lastMsg = 0;
   let lastBroadcast = new Date().getTime();
 
+  const ipfsOptions = {
+      EXPERIMENTAL: {
+        pubsub: true
+      }
+  };
 
   const _publishMsg = async function(msg,alias) {
       if(lastMsg > new Date().getTime() - 60000) return;
@@ -25,6 +33,8 @@
       const addr = '' + stats.cid.toString()+'';
       ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias}));
       lastMsg = new Date().getTime();
+      msg.community.uuid=alias;
+      db.add(msg);
       return;
   }
 
@@ -67,7 +77,7 @@
 
       setTimeout(async function() {
         selfID = await ipfs.id();
-      },1000)
+      },1000);
       const receiveMsg = async (msg) => {
         if(msg.from == selfID) return;
 
@@ -130,7 +140,10 @@
           }
         }
       };
-      await ipfs.pubsub.subscribe(topic, receiveMsg)
+      await ipfs.pubsub.subscribe(topic, receiveMsg);
+      orbitdb = await OrbitDB.createInstance(ipfs);
+      db = await orbitdb.feed(topic);
+      console.log('OrbitDB',db.address);
     } catch(e) {
       console.log(e);
     }
