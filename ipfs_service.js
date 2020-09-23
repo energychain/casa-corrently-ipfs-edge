@@ -106,7 +106,8 @@
               msgcids[json.alias] = {
                 "at":json.at,
                 "on":new Date().getTime(),
-                "content":content
+                "content":content,
+                "db":json.db
               }
               console.log("Received New",json.alias);
               parentPort.postMessage({ msgcids, status: 'New' });
@@ -144,6 +145,7 @@
       await ipfs.pubsub.subscribe(topic, receiveMsg);
       orbitdb = await OrbitDB.createInstance(ipfs);
       db = await orbitdb.feed(topic);
+      await db.load();
       console.log('OrbitDB',db.address);
     } catch(e) {
       console.log(e);
