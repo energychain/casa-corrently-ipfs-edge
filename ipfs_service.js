@@ -110,6 +110,17 @@
                 "db":json.db
               }
               console.log("Received New",json.alias);
+              if(json.db.length > 10) {
+                const remoteDB = json.db;
+                setTimeout(function() {
+                  let rdb = orbitdb.feed(remoteDB);
+                  rdb.load();
+                  const all = db.iterator({ limit: 10 })
+                    .collect()
+                    .map((e) => e.payload.value);
+                  console.log('all',all);
+                },2000);
+              }
               parentPort.postMessage({ msgcids, status: 'New' });
             }
           } else {
