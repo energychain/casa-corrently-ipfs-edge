@@ -31,12 +31,10 @@
       if(alias == null) alias = '- no alias -';
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
+      msg.community.uuid=alias;
+      const hash = await db.add(msg);
       ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,db:'/orbitdb/'+db.address.root+'/'+db.address.path}));
       lastMsg = new Date().getTime();
-      msg.community.uuid=alias;
-      console.log('Sending to DB');
-      const hash = await db.add(msg);
-      console.log('msghash',hash);
       return;
   }
 
@@ -82,8 +80,18 @@
       },1000);
       const receiveMsg = async (msg) => {
         if(msg.from == selfID) return;
+        let json = {};
 
-        let json = JSON.parse(msg.data.toString());
+        try {
+          json = JSON.parse(msg.data.toString());
+        } catch(e) {
+          function uintToString(uintArray) {
+              var encodedString = String.fromCharCode.apply(null, uintArray),
+                  decodedString = decodeURIComponent(escape(encodedString));
+              return decodedString;
+          }
+          json = JSON.parse(uintToString(msg.data));
+        }
         console.log("Incomming Message",json,msg.from);
 
         const parseSingle = async function(json) {
@@ -114,7 +122,7 @@
               if(json.db.length > 10) {
                 const remoteDB = json.db;
                 setTimeout(function() {
-                  let rdb = orbitdb.feed(remoteDB);
+                  let rdb = orbitdb.log(remoteDB);
                   const all = db.iterator({ limit: 10 })
                     .collect()
                     .map((e) => e.payload.value);
@@ -156,8 +164,11 @@
       };
       await ipfs.pubsub.subscribe(topic, receiveMsg);
       orbitdb = await OrbitDB.createInstance(ipfs);
-      db = await orbitdb.feed(topic,{create:true,overwrite:true});
-      await db.load();
+      db = await orbitdb.log(topic,{create:true,overwrite:true});
+      db.events.on('ready', () => {
+        console.log("Local DB Ready");
+      });
+      await db.load(100,60000);
       console.log('OrbitDB',db.address);
     } catch(e) {
       console.log(e);
