@@ -28,12 +28,13 @@
   const _publishMsg = async function(msg,alias) {
       if(lastMsg > new Date().getTime() - 60000) return;
 
-      if(alias == null) alias = '';
+      if(alias == null) alias = '- no alias -';
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
       ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,db:'/orbitdb/'+db.address.root+'/'+db.address.path}));
       lastMsg = new Date().getTime();
       msg.community.uuid=alias;
+      consonle.log('Sending to DB');
       const hash = await db.add(msg);
       console.log('msghash',hash);
       return;
@@ -117,7 +118,7 @@
                   const all = db.iterator({ limit: 10 })
                     .collect()
                     .map((e) => e.payload.value);
-                  console.log('all',all);
+                  console.log('History Length',all.length);
                 },2000);
               }
               parentPort.postMessage({ msgcids, status: 'New' });
