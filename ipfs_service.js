@@ -121,9 +121,10 @@
               console.log("Received New",json.alias);
               if(json.db.length > 10) {
                 const remoteDB = json.db;
-                setTimeout(function() {
+                setTimeout(async function() {
                   console.log('Fetching',remoteDB);
                   let rdb = orbitdb.log(remoteDB);
+                  await rdb.load();
                   const all = db.iterator({ limit: -1 })
                     .collect()
                     .map((e) => e.payload.value);
