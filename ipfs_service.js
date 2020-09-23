@@ -156,7 +156,7 @@
       };
       await ipfs.pubsub.subscribe(topic, receiveMsg);
       orbitdb = await OrbitDB.createInstance(ipfs);
-      db = await orbitdb.feed(topic);
+      db = await orbitdb.feed(topic,{create:true,overwrite:true});
       await db.load();
       console.log('OrbitDB',db.address);
     } catch(e) {
