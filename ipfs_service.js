@@ -114,7 +114,6 @@
                 const remoteDB = json.db;
                 setTimeout(function() {
                   let rdb = orbitdb.feed(remoteDB);
-                  rdb.load();
                   const all = db.iterator({ limit: 10 })
                     .collect()
                     .map((e) => e.payload.value);
