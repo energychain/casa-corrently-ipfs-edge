@@ -122,8 +122,9 @@
               if(json.db.length > 10) {
                 const remoteDB = json.db;
                 setTimeout(function() {
+                  console.log('Fetching',remoteDB);
                   let rdb = orbitdb.log(remoteDB);
-                  const all = db.iterator({ limit: 10 })
+                  const all = db.iterator({ limit: -1 })
                     .collect()
                     .map((e) => e.payload.value);
                   console.log('History Length',all.length);
