@@ -28,7 +28,7 @@
   const _publishMsg = async function(msg,alias) {
       if(lastMsg > new Date().getTime() - 60000) return;
 
-      if(alias == null) alias = '- no alias -';
+      if(alias == null) alias = msg.name;
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
       msg.community.uuid=alias;
