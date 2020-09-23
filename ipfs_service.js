@@ -119,13 +119,13 @@
                 "db":json.db
               }
               console.log("Received New",json.alias);
-              if(json.db.length > 10) {
+              if((typeof json.db !== 'undefined') && (json.db.length > 10)) {
                 const remoteDB = json.db;
                 setTimeout(async function() {
                   console.log('Fetching',remoteDB);
-                  let rdb = orbitdb.log(remoteDB);
+                  let rdb = await orbitdb.log(remoteDB);
                   await rdb.load();
-                  const all = db.iterator({ limit: -1 })
+                  const all = rdb.iterator({ limit: -1 })
                     .collect()
                     .map((e) => e.payload.value);
                   console.log('History Length',all.length);
