@@ -48,7 +48,6 @@ module.exports = function(config) {
       },
       publish: async function(msg,alias) {
           if(ipfs_service == null) await _ipfs_init(config);
-          console.log("Publishing");
           ipfs_service.postMessage({"msg":msg,"alias":alias})
       }
     }

@@ -17,6 +17,9 @@
   let orbitdb = null;
   let db = null;
   let lastMsg = 0;
+  let dbready = false;
+  let dbaddress = '';
+  let lastdbhash = '';
   let lastBroadcast = new Date().getTime();
 
   const ipfsOptions = {
@@ -32,9 +35,10 @@
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
       msg.community.uuid=alias;
-      const hash = await db.add(msg);
-      ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,db:'/orbitdb/'+db.address.root+'/'+db.address.path}));
+      if(dbready) { lastdbhash = await db.add(msg); } else  { console.log('db not ready'); }
+      ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,db:'/orbitdb/'+db.address.root+'/'+db.address.path,hash:lastdbhash}));
       lastMsg = new Date().getTime();
+      console.log('Published',lastdbhash);
       return;
   }
 
@@ -96,6 +100,9 @@
 
         const parseSingle = async function(json) {
           const ipfsPath = '/ipfs/'+json.at;
+          if(typeof json.db !== 'undefined') {
+            if(json.db == dbaddress) return;
+          }
           let content = '';
           for await (const chunk of ipfs.cat(ipfsPath,{timeout:IPFS_CAT_TIMEOUT})) {
               content += chunk;
@@ -119,18 +126,6 @@
                 "db":json.db
               }
               console.log("Received New",json.alias);
-              if((typeof json.db !== 'undefined') && (json.db.length > 10)) {
-                const remoteDB = json.db;
-                setTimeout(async function() {
-                  console.log('Fetching',remoteDB);
-                  let rdb = await orbitdb.log(remoteDB);
-                  await rdb.load();
-                  const all = rdb.iterator({ limit: -1 })
-                    .collect()
-                    .map((e) => e.payload.value);
-                  console.log('History Length',all.length);
-                },2000);
-              }
               parentPort.postMessage({ msgcids, status: 'New' });
             }
           } else {
@@ -139,7 +134,7 @@
         }
 
         if(typeof json.at !== 'undefined') {
-          if((typeof json.alias == 'undefined')||(json.alias.length < 10)) {
+          if((typeof json.alias == 'undefined')||(json.alias.length < 5)) {
             json.alias = msg.from;
             json.from = msg.from;
           }
@@ -156,6 +151,7 @@
           let rcids = JSON.parse(content);
           for (const [key, value] of Object.entries(rcids)) {
               if(key.length > 10) {
+                json.from = key;
                 json.alias = key;
                 json.at = value.at;
                 json.db = value.db;
@@ -166,12 +162,16 @@
       };
       await ipfs.pubsub.subscribe(topic, receiveMsg);
       orbitdb = await OrbitDB.createInstance(ipfs);
-      db = await orbitdb.log(topic,{create:true,overwrite:true});
+      db = await orbitdb.log(topic, { overwrite: true });
       db.events.on('ready', () => {
-        console.log("Local DB Ready");
+        dbready = true;
+        const items = db.iterator({ limit: 20000 }).collect().map(e => e.payload.value)
+        console.log("Local DB Ready:",items.length);
       });
-      await db.load(100,60000);
+      await db.load(20000,60000);
       console.log('OrbitDB',db.address);
+      dbaddress = '/orbitdb/'+db.address.root+'/'+db.address.path;
+
     } catch(e) {
       console.log(e);
     }
