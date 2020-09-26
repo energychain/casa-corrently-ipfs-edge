@@ -30,15 +30,16 @@
 
   const _publishMsg = async function(msg,alias) {
       if(lastMsg > new Date().getTime() - 60000) return;
-
-      if(alias == null) alias = msg.name;
+      if(typeof alias == 'undefined') {
+        alias='';
+      } else if(alias == null) alias = msg.name;
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
       msg.community.uuid=alias;
       if(dbready) { lastdbhash = await db.add(msg); } else  { console.log('db not ready'); }
       ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,db:'/orbitdb/'+db.address.root+'/'+db.address.path,hash:lastdbhash}));
       lastMsg = new Date().getTime();
-      console.log('Published',lastdbhash);
+      console.log('Published DB',lastdbhash);
       return;
   }
 
@@ -61,6 +62,8 @@
       const stats = await ipfs.add({path:'/broadcast',content:JSON.stringify(msgcids)});
       const addr = '' + stats.cid.toString()+'';
       ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr}));
+      const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
+      console.log("Local Broadcast to /ipns/"+lhash.name);
       return;
   }
 
@@ -68,6 +71,7 @@
     ipfs = await IPFS.create();
     try {
       // TODO: Add more peers to swarm to have a brilliant uptime
+      ipfs.swarm.connect("/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/217.163.30.7/tcp/4001/p2p/Qmanvqjcisx3LP4z8gYaBP8Lyk15mSHdotNMEdXS8zP15B").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/62.75.168.184/tcp/4001/p2p/QmeW92PaNQHJzFM1fJ97JmojmWvGCkyzp1VFj4RURcGZkv").catch(function(e) { console.log(e); });
@@ -96,7 +100,6 @@
           }
           json = JSON.parse(uintToString(msg.data));
         }
-        console.log("Incomming Message",json,msg.from);
 
         const parseSingle = async function(json) {
           const ipfsPath = '/ipfs/'+json.at;
@@ -142,6 +145,7 @@
         }
 
         if(typeof json.broadcast !== 'undefined') {
+          console.log('Broadcast from',msg.from);
           const ipfsPath = '/ipfs/'+json.broadcast;
           let content = '';
           for await (const chunk of ipfs.cat(ipfsPath,{timeout:IPFS_CAT_TIMEOUT})) {
@@ -169,8 +173,11 @@
         console.log("Local DB Ready:",items.length);
       });
       await db.load(20000,60000);
-      console.log('OrbitDB',db.address);
+      console.log('OrbitDB Address',db.address);
       dbaddress = '/orbitdb/'+db.address.root+'/'+db.address.path;
+      console.log('Initialize personal IPFS repository');
+      const stats = await ipfs.files.stat("/",{hash:true});
+      const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
 
     } catch(e) {
       console.log(e);
@@ -183,6 +190,7 @@
   console.log('Bootstrap IPFS for Casa Corrently');
   await _ipfs_init(config);
   parentPort.on('message',function(data) {
+    console.log('Publish for alias',data.alias);
     _publishMsg(data.msg,data.alias);
   });
 })();
