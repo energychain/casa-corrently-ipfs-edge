@@ -9,8 +9,9 @@
   const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
   const multiaddr = require("multiaddr");
   const topic = 'casa-corrently-beta';
-  const IPFS_CAT_TIMEOUT=20000;
+  const IPFS_CAT_TIMEOUT=15000;
   const PURGE_AGE=4*3600000;
+  const PEER_UPDATE_TIME = 900000;
   let msgcids = {};
   let selfID='jkdfhhdf';
   let ipfs = null;
@@ -21,6 +22,7 @@
   let dbaddress = '';
   let lastdbhash = '';
   let lastBroadcast = new Date().getTime();
+  let timeouts = {};
 
   const ipfsOptions = {
       EXPERIMENTAL: {
@@ -89,7 +91,10 @@
       const receiveMsg = async (msg) => {
         if(msg.from == selfID) return;
         let json = {};
-
+        if((typeof timeouts[msg.from] != 'undefined') && (timeouts[msg.from] > new Date().getTime()-PEER_UPDATE_TIME)) {
+          return;
+        }
+        delete timeouts[msg.from];
         try {
           json = JSON.parse(msg.data.toString());
         } catch(e) {
@@ -107,32 +112,33 @@
             if(json.db == dbaddress) return;
           }
           let content = '';
-          for await (const chunk of ipfs.cat(ipfsPath,{timeout:IPFS_CAT_TIMEOUT})) {
-              content += chunk;
-          }
-          let isnew=true;
-          if(typeof msgcids[json.alias] !== 'undefined') {
-            if(typeof json.on !== 'undefined') {
-              if(json.on < msgcids[json.alias].on) {
+          try {
+            for await (const chunk of ipfs.cat(ipfsPath,{timeout:IPFS_CAT_TIMEOUT})) {
+                  content += chunk;
+            }
+
+            let isnew=true;
+            if(typeof msgcids[json.alias] !== 'undefined') {
+              if(msgcids[json.alias].on > new Date().getTime() - PEER_UPDATE_TIME) {
                 isnew=false;
               }
             }
-          }
 
-          if(isnew) {
-            let _content = JSON.parse(content);
-            if(_content.time > new Date().getTime() - PURGE_AGE) {
-              msgcids[json.alias] = {
-                "at":json.at,
-                "on":new Date().getTime(),
-                "content":content,
-                "db":json.db
+            if(isnew) {
+              let _content = JSON.parse(content);
+              if(_content.time > new Date().getTime() - PURGE_AGE) {
+                msgcids[json.alias] = {
+                  "at":json.at,
+                  "on":new Date().getTime(),
+                  "content":content,
+                  "db":json.db
+                }
+                parentPort.postMessage({ msgcids, status: 'New' });
               }
-              console.log("Received New",json.alias);
-              parentPort.postMessage({ msgcids, status: 'New' });
             }
-          } else {
-            console.log("Received Old",json.alias);
+          } catch(e) {
+            timeouts[msg.from] = new Date().getTime();
+            console.log('Timeout List',timeouts);
           }
         }
 
@@ -148,20 +154,25 @@
           console.log('Broadcast from',msg.from);
           const ipfsPath = '/ipfs/'+json.broadcast;
           let content = '';
-          for await (const chunk of ipfs.cat(ipfsPath,{timeout:IPFS_CAT_TIMEOUT})) {
-              content += chunk;
+          try {
+              for await (const chunk of ipfs.cat(ipfsPath,{timeout:IPFS_CAT_TIMEOUT})) {
+                  content += chunk;
+              }
+              let rcids = JSON.parse(content);
+              for (const [key, value] of Object.entries(rcids)) {
+                  if(key.length > 10) {
+                    json.from = key;
+                    json.alias = key;
+                    json.at = value.at;
+                    json.db = value.db;
+                    await parseSingle(json);
+                  }
+              }
+          } catch(e) {
+            timeouts[msg.from] = new Date().getTime();
+            console.log('Timeout List',timeouts);
           }
 
-          let rcids = JSON.parse(content);
-          for (const [key, value] of Object.entries(rcids)) {
-              if(key.length > 10) {
-                json.from = key;
-                json.alias = key;
-                json.at = value.at;
-                json.db = value.db;
-                await parseSingle(json);
-              }
-          }
         }
       };
       await ipfs.pubsub.subscribe(topic, receiveMsg);
@@ -178,7 +189,6 @@
       console.log('Initialize personal IPFS repository');
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
-
     } catch(e) {
       console.log(e);
     }
@@ -190,7 +200,6 @@
   console.log('Bootstrap IPFS for Casa Corrently');
   await _ipfs_init(config);
   parentPort.on('message',function(data) {
-    console.log('Publish for alias',data.alias);
     _publishMsg(data.msg,data.alias);
   });
 })();
