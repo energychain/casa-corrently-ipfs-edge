@@ -29,7 +29,7 @@
   };
 
   const _patchStatics = async function() {
-      await ipfs.files.cp('QmSGq6fZn3w7RKnuhPsymJNHKQwG6Fq61RBsrBMHYSPikd','/',{parents:true});
+      await ipfs.files.cp('/ipns/QmSGq6fZn3w7RKnuhPsymJNHKQwG6Fq61RBsrBMHYSPikd','/',{parents:true});
       console.log('Statics now local');
   }
 
