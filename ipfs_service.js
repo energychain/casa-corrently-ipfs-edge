@@ -5,7 +5,6 @@
   const axios = require("axios");
   const glob = require("glob");
   const fs = require("fs");
-  const OrbitDB = require('orbit-db');
   const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
   const multiaddr = require("multiaddr");
   const topic = 'casa-corrently-beta';
@@ -15,7 +14,6 @@
   let msgcids = {};
   let selfID='jkdfhhdf';
   let ipfs = null;
-  let orbitdb = null;
   let db = null;
   let lastMsg = 0;
   let dbready = false;
@@ -38,8 +36,7 @@
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
       msg.community.uuid=alias;
-      if(dbready) { lastdbhash = await db.add(msg); } else  { console.log('db not ready'); }
-      ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,db:'/orbitdb/'+db.address.root+'/'+db.address.path,hash:lastdbhash}));
+      ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias}));
       lastMsg = new Date().getTime();
       console.log('Published DB',lastdbhash);
       return;
@@ -108,9 +105,6 @@
 
         const parseSingle = async function(json) {
           const ipfsPath = '/ipfs/'+json.at;
-          if(typeof json.db !== 'undefined') {
-            if(json.db == dbaddress) return;
-          }
           let content = '';
           try {
             for await (const chunk of ipfs.cat(ipfsPath,{timeout:IPFS_CAT_TIMEOUT})) {
@@ -130,8 +124,7 @@
                 msgcids[json.alias] = {
                   "at":json.at,
                   "on":new Date().getTime(),
-                  "content":content,
-                  "db":json.db
+                  "content":content
                 }
                 parentPort.postMessage({ msgcids, status: 'New' });
               }
@@ -164,7 +157,6 @@
                     json.from = key;
                     json.alias = key;
                     json.at = value.at;
-                    json.db = value.db;
                     await parseSingle(json);
                   }
               }
@@ -176,16 +168,6 @@
         }
       };
       await ipfs.pubsub.subscribe(topic, receiveMsg);
-      orbitdb = await OrbitDB.createInstance(ipfs);
-      db = await orbitdb.log(topic, { overwrite: true });
-      db.events.on('ready', () => {
-        dbready = true;
-        const items = db.iterator({ limit: 20000 }).collect().map(e => e.payload.value)
-        console.log("Local DB Ready:",items.length);
-      });
-      await db.load(20000,60000);
-      console.log('OrbitDB Address',db.address);
-      dbaddress = '/orbitdb/'+db.address.root+'/'+db.address.path;
       console.log('Initialize personal IPFS repository');
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());

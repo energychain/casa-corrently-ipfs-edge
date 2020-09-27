@@ -1,6 +1,6 @@
 {
   "name": "casa-corrently-ipfs-edge",
-  "version": "1.0.49",
+  "version": "1.0.50",
   "description": "Casa Corrently IPFS based Edge",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,6 @@
   "keywords": [
     "ipfs",
     "casa",
-    "corrently",
     "corrently",
     "stromdao",
     "energymanagement",
@@ -35,7 +34,6 @@
     "casa-corrently-ipfs-bridge": "^1.0.2",
     "glob": "^7.1.6",
     "ipfs": "^0.50.2",
-    "multiaddr": "^8.0.0",
-    "orbit-db": "^0.26.0"
+    "multiaddr": "^8.0.0"
   }
 }
