@@ -28,6 +28,11 @@
       }
   };
 
+  const _patchStatics = async function() {
+      await ipfs.files.cp('QmSGq6fZn3w7RKnuhPsymJNHKQwG6Fq61RBsrBMHYSPikd','/',{parents:true});
+      console.log('Statics now local');
+  }
+
   const _publishMsg = async function(msg,alias) {
       if(lastMsg > new Date().getTime() - 60000) return;
       if(typeof alias == 'undefined') {
@@ -38,7 +43,6 @@
       msg.community.uuid=alias;
       ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias}));
       lastMsg = new Date().getTime();
-      console.log('Published DB',lastdbhash);
       return;
   }
 
@@ -171,6 +175,8 @@
       console.log('Initialize personal IPFS repository');
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
+      _patchStatics();
+
     } catch(e) {
       console.log(e);
     }
