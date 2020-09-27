@@ -20,6 +20,7 @@ module.exports = function(config) {
         throw new Error(`Worker stopped with exit code ${code}`);
      });
      console.log('Ipfs Service started');
+     /*
      if(typeof config.bridge !== 'undefined') {
        const Bridge = require(config.bridge);
        const bridge = Bridge(config);
@@ -27,6 +28,7 @@ module.exports = function(config) {
          bridge.broadcast(msgcids);
        },60000);
      }
+     */
      return;
   };
 

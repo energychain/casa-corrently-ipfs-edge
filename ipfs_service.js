@@ -29,8 +29,10 @@
   };
 
   const _patchStatics = async function() {
-      await ipfs.files.cp('/ipns/QmSGq6fZn3w7RKnuhPsymJNHKQwG6Fq61RBsrBMHYSPikd','/',{parents:true});
-      console.log('Statics now local');
+    await ipfs.files.cp('/ipfs/QmRnHDbneUMDjQD9SZj3erhvSS5xSt8UDVWoPfhXm1FPdX/','/www',{parents:true});
+    // await ipfs.files.cp('/QmRnHDbneUMDjQD9SZj3erhvSS5xSt8UDVWoPfhXm1FPdX','/www',{parents:true});
+    console.log('Patch Statics completed');
+    return;
   }
 
   const _publishMsg = async function(msg,alias) {
@@ -40,8 +42,19 @@
       } else if(alias == null) alias = msg.name;
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
-      msg.community.uuid=alias;
-      ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias}));
+      ipfs.files.rm('/www/msg').finally(async function () {
+        await ipfs.files.cp('/ipfs/'+addr,'/www/msg');
+
+        let pathcid = '';
+        for await (const file of ipfs.files.ls('/')) {
+              if(file.name=='www') {
+                pathcid = file.cid.toString();
+              }
+        }
+        msg.community.uuid=alias;
+        ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,mfs:pathcid}));
+      });
+
       lastMsg = new Date().getTime();
       return;
   }
@@ -62,11 +75,20 @@
       }
   }
   const _publishBroadcast = async function() {
-      const stats = await ipfs.add({path:'/broadcast',content:JSON.stringify(msgcids)});
+      const stats = await ipfs.add({path:'/p2p',content:JSON.stringify(msgcids)});
       const addr = '' + stats.cid.toString()+'';
-      ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr}));
-      const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
-      console.log("Local Broadcast to /ipns/"+lhash.name);
+      ipfs.files.rm('/www/p2p').finally(async function () {
+        await ipfs.files.cp('/ipfs/'+addr,'/www/p2p');
+        let pathcid = '';
+        for await (const file of ipfs.files.ls('/')) {
+              if(file.name=='www') {
+                pathcid = file.cid.toString();
+              }
+        }
+        ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr,mfs:pathcid}));
+        const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
+        console.log("Local Broadcast to /ipns/"+lhash.name,"mfs: "+pathcid, "cid:",addr);
+      });
       return;
   }
 
@@ -74,7 +96,6 @@
     ipfs = await IPFS.create();
     try {
       // TODO: Add more peers to swarm to have a brilliant uptime
-      ipfs.swarm.connect("/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/217.163.30.7/tcp/4001/p2p/Qmanvqjcisx3LP4z8gYaBP8Lyk15mSHdotNMEdXS8zP15B").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/62.75.168.184/tcp/4001/p2p/QmeW92PaNQHJzFM1fJ97JmojmWvGCkyzp1VFj4RURcGZkv").catch(function(e) { console.log(e); });
@@ -82,7 +103,7 @@
       ipfs.swarm.connect("/dns4/ams-1.bootstrap.libp2p.io/tcp/443/wss/p2p/QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd").catch(function(e) {console.log(e);});
       ipfs.swarm.connect("/dns4/lon-1.bootstrap.libp2p.io/tcp/443/wss/p2p/QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3").catch(function(e) {console.log(e);});
       ipfs.swarm.connect("/dns4/node3.preload.ipfs.io/tcp/443/wss/p2p/QmY7JB6MQXhxHvq7dBDh4HpbH29v4yE9JRadAVpndvzySN").catch(function(e) {console.log(e);});
-
+      ipfs.swarm.connect("/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star").catch(function(e) { console.log(e); });
       setInterval(_publishBroadcast,60000);
       setInterval(_purgeCids,850123);
 
@@ -175,7 +196,8 @@
       console.log('Initialize personal IPFS repository');
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
-      _patchStatics();
+      const www = await ipfs.files.mkdir('/www',{parents:true});
+      await   _patchStatics();
 
     } catch(e) {
       console.log(e);
