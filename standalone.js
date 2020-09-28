@@ -1,35 +1,22 @@
 Error.stackTraceLimit = 200;
 
-const CasaCorrently = require("casa-corrently");
 const fs = require("fs");
-const publisher = new require("./index.js")();
 
 const boot = async function() {
-      const storage = {
-        memstorage:{},
-        get:function(key) {
-          return this.memstorage[key];
-        },
-        set:function(key,value) {
-          this.memstorage[key] = value;
-        }
-      };
-      let msg = {
-        payload: {},
-        topic: 'statistics'
-      };
-      const main = await CasaCorrently();
-      const meterLib = main.meterLib;
-      const config = JSON.parse(fs.readFileSync("sample_config.json"));
-      delete msg.payload.latest;
-      await publisher.publish(await meterLib(msg,config,storage));
-      setInterval(async function() {
-        await publisher.publish(await meterLib(msg,config,storage));
-      },60000);
-      setInterval(async function() {
-        console.log(await publisher.retrieve('QmU14oFSdrfRmJb4U7ygeb6Q5fbGi9rRb89bmWxPm74bhV'));
-        console.log(await publisher.retrieve('QmRXzciq9PgA5E2mVD8osxU9u4tim7hLNxi3gaZwfYhxGJ'));
-      },10000);
-      console.log("done");
+    const { Worker } = require('worker_threads');
+
+    const ipfs_service = new Worker('./ipfs_service.js',{workerData:{name:'ipfs_relay','uuid':'ipfs_relay'}});
+
+    ipfs_service.on('message', function(_data) {
+    });
+    ipfs_service.on('error', function(e) {
+      console.log('Error in Worker',e);
+    });
+    ipfs_service.on('exit', (code) => {
+      console.log('Exit Worker');
+      if (code !== 0)
+        throw new Error(`Worker stopped with exit code ${code}`);
+     });
+     console.log('Ipfs Service started');
 };
 boot();

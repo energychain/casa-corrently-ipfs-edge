@@ -103,8 +103,8 @@
       ipfs.swarm.connect("/dns4/ams-1.bootstrap.libp2p.io/tcp/443/wss/p2p/QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd").catch(function(e) {console.log(e);});
       ipfs.swarm.connect("/dns4/lon-1.bootstrap.libp2p.io/tcp/443/wss/p2p/QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3").catch(function(e) {console.log(e);});
       ipfs.swarm.connect("/dns4/node3.preload.ipfs.io/tcp/443/wss/p2p/QmY7JB6MQXhxHvq7dBDh4HpbH29v4yE9JRadAVpndvzySN").catch(function(e) {console.log(e);});
-      ipfs.swarm.connect("/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star").catch(function(e) { console.log(e); });
-      setInterval(_publishBroadcast,60000);
+      ipfs.swarm.connect("/ip6/2604:a880:1:20::1d9:6001/tcp/4001/p2p/QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx").catch(function(e) { console.log(e); });
+      setInterval(_publishBroadcast,900000);
       setInterval(_purgeCids,850123);
 
       setTimeout(async function() {
@@ -204,7 +204,6 @@
     }
     return;
   }
-
 
   // bootstrap
   console.log('Bootstrap IPFS for Casa Corrently');

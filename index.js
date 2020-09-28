@@ -1,11 +1,18 @@
 module.exports = function(config) {
   const { Worker } = require('worker_threads');
+  const fs = require('fs');
   let ipfs_service = null;
 
   let msgcids = {};
 
   const _ipfs_init = async function(config) {
-    ipfs_service = new Worker('./node_modules/casa-corrently-ipfs-edge/ipfs_service.js',{workerData:config});
+    const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
+
+    let workerFile = './node_modules/casa-corrently-ipfs-edge/ipfs_service.js';
+    if(!await fileExists(workerFile)) {
+      workerFile = './index.js';
+    }
+    ipfs_service = new Worker(workerFile,{workerData:config});
     ipfs_service.on('message', function(_data) {
       if(typeof _data.msgcids !== 'undefined') {
         msgcids = _data.msgcids;
@@ -20,15 +27,6 @@ module.exports = function(config) {
         throw new Error(`Worker stopped with exit code ${code}`);
      });
      console.log('Ipfs Service started');
-     /*
-     if(typeof config.bridge !== 'undefined') {
-       const Bridge = require(config.bridge);
-       const bridge = Bridge(config);
-       setInterval(function() {
-         bridge.broadcast(msgcids);
-       },60000);
-     }
-     */
      return;
   };
 

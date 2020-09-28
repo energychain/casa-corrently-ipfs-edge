@@ -1,6 +1,6 @@
 {
   "name": "casa-corrently-ipfs-edge",
-  "version": "1.0.53",
+  "version": "1.0.54",
   "description": "Casa Corrently IPFS based Edge",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/energychain/casa-corrently-ipfs-edge.git"
+  },
+  "bin": {
+    "casa-corrently-ipfs-edge": "./standalone.js"
   },
   "keywords": [
     "ipfs",
