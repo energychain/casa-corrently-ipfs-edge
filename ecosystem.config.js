@@ -7,7 +7,7 @@ module.exports = {
   }],
   "deploy" : {
      "production" : {
-       "user" : "corrently",
+       "user" : "root",
        "host" : ["l2.stromdao.de","node.corrently.io"],
        "ref"  : "origin/master",
        "repo" : "https://github.com/energychain/casa-corrently-ipfs-edge.git",
