@@ -12,7 +12,7 @@ module.exports = {
        "ref"  : "origin/master",
        "repo" : "https://github.com/energychain/casa-corrently-ipfs-edge.git",
        "path" : "/opt/casa-corrently/ipfs-edge",
-       "post-deploy" : "npm install; npm ci; pm2 startOrRestart ecosystem.config.json --env production",
+       "post-deploy" : "npm install; npm ci; pm2 startOrRestart /opt/casa-corrently/ipfs-edge/current/ecosystem.config.js --env production",
       },
    }
 }
