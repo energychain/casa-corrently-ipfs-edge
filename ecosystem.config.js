@@ -8,11 +8,11 @@ module.exports = {
   "deploy" : {
      "production" : {
        "user" : "corrently",
-       "host" : ["l2.stromdao.de"],
+       "host" : ["l2.stromdao.de","node.corrently.io"],
        "ref"  : "origin/master",
        "repo" : "https://github.com/energychain/casa-corrently-ipfs-edge.git",
        "path" : "/opt/casa-corrently/ipfs-edge",
-       "post-deploy" : "npm install; npm ci"
+       "post-deploy" : "npm install; npm ci; pm2 startOrRestart ecosystem.json --env production",
       },
    }
 }
