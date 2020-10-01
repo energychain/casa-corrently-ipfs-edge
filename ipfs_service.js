@@ -2,6 +2,7 @@
   const { workerData, parentPort } = require('worker_threads');
   const config = workerData;
   const IPFS = require("ipfs");
+  const CLIENT = require("ipfs-http-client");
   const axios = require("axios");
   const glob = require("glob");
   const fs = require("fs");
@@ -93,7 +94,16 @@
   }
 
   const _ipfs_init = async function(config) {
+    try {
     ipfs = await IPFS.create();
+    } catch(e) {
+        // in case this fails we try to connect to a local
+        try {
+        ipfs = CLIENT('http://localhost:5001');
+      } catch(e) {
+        ipfs = CLIENT('http://localhost:4001');
+      }
+    }
     try {
       // TODO: Add more peers to swarm to have a brilliant uptime
       // ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4001/p2p/QmZW7WWzGB4EPKBE4B4V8zT1tY54xmTvPZsCK8PyTNWT7i").catch(function(e) { console.log(e); });
