@@ -1,6 +1,6 @@
 {
   "name": "casa-corrently-ipfs-edge",
-  "version": "1.0.57",
+  "version": "1.0.58",
   "description": "Casa Corrently IPFS based Edge",
   "main": "index.js",
   "scripts": {

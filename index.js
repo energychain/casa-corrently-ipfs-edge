@@ -8,7 +8,7 @@ module.exports = function(config) {
   const _ipfs_init = async function(config) {
     const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
 
-    let workerFile = './node_modules/casa-corrently-ipfs-edge/ipfs_service.js';
+    let workerFile = __dirname + '/node_modules/casa-corrently-ipfs-edge/ipfs_service.js';
     if(!await fileExists(workerFile)) {
       workerFile = './index.js';
     }

@@ -100,6 +100,7 @@
         // in case this fails we try to connect to a local
         try {
         ipfs = CLIENT('http://localhost:5001');
+        await ipfs.id();
       } catch(e) {
         ipfs = CLIENT('http://localhost:4001');
       }
