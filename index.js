@@ -9,9 +9,9 @@ module.exports = function(config) {
     const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
 
     let workerFile = __dirname + '/node_modules/casa-corrently-ipfs-edge/ipfs_service.js';
-    if(!await fileExists(workerFile)) {
-      workerFile = './index.js';
-    }
+    if(!await fileExists(workerFile)) workerFile = __dirname + './ipfs_service.js';
+    if(!await fileExists(workerFile)) workerFile = './ipfs_service.js';
+
     ipfs_service = new Worker(workerFile,{workerData:config});
     ipfs_service.on('message', function(_data) {
       if(typeof _data.msgcids !== 'undefined') {
