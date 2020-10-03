@@ -95,16 +95,23 @@
 
   const _ipfs_init = async function(config) {
     try {
-    ipfs = await IPFS.create();
+      ipfs = await IPFS.create();
+      const Gateway = require('ipfs/src/http');
+      const gateway = new Gateway(ipfs);
+      gateway.start();
     } catch(e) {
         // in case this fails we try to connect to a local
-        console.log(e);
-
         try {
           if(ipfs == null) ipfs = CLIENT('http://localhost:5001');
           await ipfs.id();
         } catch(e) {
-          if(ipfs == null) ipfs = CLIENT('http://localhost:4001');
+          try {
+            if(ipfs == null) ipfs = CLIENT('http://localhost:4001');
+            await ipfs.id();
+          } catch(e) {
+            if(ipfs == null) ipfs = CLIENT('http://localhost:4002');
+            await ipfs.id();
+          }
         }
     }
     try {
