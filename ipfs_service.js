@@ -95,7 +95,16 @@
 
   const _ipfs_init = async function(config) {
     try {
-      ipfs = await IPFS.create();
+      if(typeof config.ipfs_gw !== 'undefined') {
+        try {
+        ipfs = CLIENT(config.ipfs_api_gw);
+        await ipfs.id();
+        } catch(e) {
+          ipfs = null;
+        }
+      }
+
+      if(ipfs == null) ipfs = await IPFS.create();
       const Gateway = require('ipfs/src/http');
       const gateway = new Gateway(ipfs);
       gateway.start();
