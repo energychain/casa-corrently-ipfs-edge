@@ -99,14 +99,13 @@
     } catch(e) {
         // in case this fails we try to connect to a local
         console.log(e);
-        /*
+
         try {
-        ipfs = CLIENT('http://localhost:5001');
-        await ipfs.id();
-      } catch(e) {
-        ipfs = CLIENT('http://localhost:4001');
-      }
-         */
+          if(ipfs == null) ipfs = CLIENT('http://localhost:5001');
+          await ipfs.id();
+        } catch(e) {
+          if(ipfs == null) ipfs = CLIENT('http://localhost:4001');
+        }
     }
     try {
       // TODO: Add more peers to swarm to have a brilliant uptime
