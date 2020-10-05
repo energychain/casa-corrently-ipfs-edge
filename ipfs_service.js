@@ -95,7 +95,7 @@
 
   const _ipfs_init = async function(config) {
     try {
-      if(typeof config.ipfs_gw !== 'undefined') {
+      if(typeof config.ipfs_api_gw !== 'undefined') {
         try {
         ipfs = CLIENT(config.ipfs_api_gw);
         await ipfs.id();
