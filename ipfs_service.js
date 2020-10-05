@@ -10,7 +10,7 @@
   const multiaddr = require("multiaddr");
   const topic = 'casa-corrently-beta';
   const IPFS_CAT_TIMEOUT=15000;
-  const PURGE_AGE=4*3600000;
+  let PURGE_AGE=4*3600000;
   const PEER_UPDATE_TIME = 900000;
   let msgcids = {};
   let selfID='jkdfhhdf';
@@ -222,7 +222,14 @@
 
         }
       };
-      await ipfs.pubsub.subscribe(topic, receiveMsg);
+      if(typeof config.nosub !== 'undefined') {
+        await ipfs.pubsub.subscribe(topic, function() { return; });
+      } else {
+        await ipfs.pubsub.subscribe(topic, receiveMsg);
+      }
+      if(typeof config.purgeage !== 'undefined') {
+        PURGE_AGE = config.purgeage;
+      }
       console.log('Initialize personal IPFS repository');
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
