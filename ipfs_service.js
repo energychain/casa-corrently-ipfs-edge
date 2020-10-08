@@ -59,7 +59,7 @@
       msgcids[alias] = {
         on:lastMsg,
         at:addr,
-        content:JSON.stringify(msg);
+        content:JSON.stringify(msg)
       }
 
       return;
