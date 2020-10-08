@@ -56,7 +56,11 @@
       });
 
       lastMsg = new Date().getTime();
-      msgcids[alias] = msg;
+      msgcids[alias] = {
+        on:lastMsg,
+        at:addr,
+        content:JSON.stringify(msg);
+      }
 
       return;
   }
