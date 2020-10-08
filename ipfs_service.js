@@ -37,7 +37,6 @@
   }
 
   const _publishMsg = async function(msg,alias) {
-      if(lastMsg > new Date().getTime() - 60000) return;
       if(typeof alias == 'undefined') {
         alias='';
       } else if(alias == null) alias = msg.name;
@@ -57,6 +56,8 @@
       });
 
       lastMsg = new Date().getTime();
+      msgcids[alias] = msg;
+
       return;
   }
 
