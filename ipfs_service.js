@@ -3,6 +3,7 @@
   const config = workerData;
   const IPFS = require("ipfs");
   const CLIENT = require("ipfs-http-client");
+  const OrbitDB = require('orbit-db');
   const axios = require("axios");
   const glob = require("glob");
   const fs = require("fs");
@@ -10,6 +11,7 @@
   const multiaddr = require("multiaddr");
   const topic = 'casa-corrently-beta';
   const IPFS_CAT_TIMEOUT=15000;
+
   let PURGE_AGE=4*3600000;
   const PEER_UPDATE_TIME = 900000;
   let msgcids = {};
@@ -34,6 +36,14 @@
     // await ipfs.files.cp('/QmRnHDbneUMDjQD9SZj3erhvSS5xSt8UDVWoPfhXm1FPdX','/www',{parents:true});
     console.log('Patch Statics completed');
     return;
+  }
+  const _storeDB = async function(msg) {
+      if(db !== null) {
+          const dbinstance = await db.eventlog(msg.fingerprint.config);
+          dbinstance.add(msg);
+          console.log('HistoryDB',dbinstance.address);
+      }
+      return;
   }
 
   const _publishMsg = async function(msg,alias) {
@@ -140,6 +150,7 @@
       ipfs.swarm.connect("/ip6/2604:a880:1:20::1d9:6001/tcp/4001/p2p/QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4012/p2p/QmU14oFSdrfRmJb4U7ygeb6Q5fbGi9rRb89bmWxPm74bhV").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/136.244.111.239/tcp/4001/p2p/QmSt3Tz2HTfHqEpAZLRbzgXWUBxEq8kRLQM6PMmGvonirT").catch(function(e) { console.log(e); });
+      orbitdb = await OrbitDB.createInstance(ipfs);
 
       setInterval(_publishBroadcast,900000);
       setInterval(_purgeCids,850123);
@@ -255,6 +266,7 @@
   parentPort.on('message',async function(data) {
     // eventuell muss hier eine Publish Que aufgebaut werden.
     await _publishMsg(data.msg,data.alias);
+    _storeDB(data.msg);
     return;
   });
 })();
