@@ -38,10 +38,12 @@
     return;
   }
   const _storeDB = async function(msg) {
-      if(db !== null) {
-          const dbinstance = await db.eventlog(msg.fingerprint.config);
+      if(orbitdb !== null) {
+          const dbinstance = await orbitdb.eventlog(msg.fingerprint.config);
           dbinstance.add(msg);
           console.log('HistoryDB',dbinstance.address);
+      } else {
+        console.log('orbitdb is Null');
       }
       return;
   }
