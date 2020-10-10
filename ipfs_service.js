@@ -75,7 +75,7 @@
         msg.community.uuid=alias;
         ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,mfs:pathcid}));
       });
-      let history = await _storeDB(data.msg);
+      let history = await _storeDB(msg);
 
       lastMsg = new Date().getTime();
       msgcids[alias] = {
