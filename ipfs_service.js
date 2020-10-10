@@ -227,7 +227,11 @@
                   "content":content,
                   "history":await _storeDB(_content)
                 }
+                try {
                 msgcids[json.alias].localHistory = await _getDBItems(msgcids[json.alias].history);
+              } catch(e) {
+                console.log('Error in _getDBItems',e);
+              }
                 parentPort.postMessage({ msgcids, status: 'New' });
               }
             }
