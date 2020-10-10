@@ -37,15 +37,23 @@
     console.log('Patch Statics completed');
     return;
   }
+
   const _storeDB = async function(msg) {
       if(orbitdb !== null) {
           const dbinstance = await orbitdb.eventlog(msg.community.uuid);
-          dbinstance.add(msg);
-          console.log('HistoryDB',dbinstance.address);
+          let historyItem = {
+            time:msg.time,
+            stats:{}
+          };
+          for (const [key, value] of Object.entries(msg.stats)) {
+                historyItem.stats[key] = value.energyPrice_kwh;
+          }
+          dbinstance.add(historyItem);
+          return '/orbitdb/'+dbinstance.address.root+'/'+dbinstance.address.path;
       } else {
         console.log('orbitdb is Null');
+        return '';
       }
-      return;
   }
 
   const _publishMsg = async function(msg,alias) {
@@ -66,11 +74,13 @@
         msg.community.uuid=alias;
         ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,mfs:pathcid}));
       });
+      let history = await _storeDB(data.msg);
 
       lastMsg = new Date().getTime();
       msgcids[alias] = {
         on:lastMsg,
         at:addr,
+        history:dba,
         content:JSON.stringify(msg)
       }
 
@@ -268,7 +278,6 @@
   parentPort.on('message',async function(data) {
     // eventuell muss hier eine Publish Que aufgebaut werden.
     await _publishMsg(data.msg,data.alias);
-    _storeDB(data.msg);
     return;
   });
 })();
