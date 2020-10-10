@@ -49,6 +49,7 @@
                 historyItem.stats[key] = value.energyPrice_kwh;
           }
           dbinstance.add(historyItem);
+          console.log('DB','/orbitdb/'+dbinstance.address.root+'/'+dbinstance.address.path);
           return '/orbitdb/'+dbinstance.address.root+'/'+dbinstance.address.path;
       } else {
         console.log('orbitdb is Null');
@@ -209,7 +210,8 @@
                 msgcids[json.alias] = {
                   "at":json.at,
                   "on":new Date().getTime(),
-                  "content":content
+                  "content":content,
+                  "history":await _storeDB(_content)
                 }
                 parentPort.postMessage({ msgcids, status: 'New' });
               }
