@@ -81,7 +81,7 @@
       msgcids[alias] = {
         on:lastMsg,
         at:addr,
-        history:dba,
+        history:history,
         content:JSON.stringify(msg)
       }
 
