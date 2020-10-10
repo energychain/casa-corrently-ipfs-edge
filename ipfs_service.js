@@ -38,6 +38,15 @@
     return;
   }
 
+  const _getDBItems = async function() {
+      const dbinstance = await orbitdb.eventlog(orbitdburl);
+      dbinstance.load();
+      const allitems = dbinstance.iterator({ limit: -1 })
+      .collect()
+      .map((e) => e.payload.value);
+      return allitems;
+  }
+
   const _storeDB = async function(msg) {
       if(orbitdb !== null) {
           const dbinstance = await orbitdb.eventlog(msg.community.uuid);
@@ -104,7 +113,12 @@
       }
   }
   const _publishBroadcast = async function() {
-      const stats = await ipfs.add({path:'/p2p',content:JSON.stringify(msgcids)});
+      let remotcids = {};
+      for (const [key, value] of Object.entries(msgcids)) {
+            remotecids[key] = value;
+            delete remotecids[key].localHistory;
+      }
+      const stats = await ipfs.add({path:'/p2p',content:JSON.stringify(remotcids)});
       const addr = '' + stats.cid.toString()+'';
       ipfs.files.rm('/www/p2p').finally(async function () {
         await ipfs.files.cp('/ipfs/'+addr,'/www/p2p');
@@ -213,6 +227,7 @@
                   "content":content,
                   "history":await _storeDB(_content)
                 }
+                msgcids[json.alias].localHistory = await _getDBItems(msgcids[json.alias].history);
                 parentPort.postMessage({ msgcids, status: 'New' });
               }
             }

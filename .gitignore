@@ -105,3 +105,4 @@ configs/
 # TernJS port file
 .tern-port
 package.json.old
+orbitdb/
