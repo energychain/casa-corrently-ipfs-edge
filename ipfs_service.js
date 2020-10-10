@@ -39,7 +39,7 @@
   }
   const _storeDB = async function(msg) {
       if(orbitdb !== null) {
-          const dbinstance = await orbitdb.eventlog(msg.fingerprint.config.toString('hex'));
+          const dbinstance = await orbitdb.eventlog(msg.community.uuid);
           dbinstance.add(msg);
           console.log('HistoryDB',dbinstance.address);
       } else {
