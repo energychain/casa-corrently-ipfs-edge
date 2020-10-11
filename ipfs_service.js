@@ -42,11 +42,17 @@
   const _getDBItems = async function(uuid) {
     if(historydb == null) return;
     try {
+      let resultItems = [];
       console.log('_getDBItems',uuid);
       const allitems = historydb.iterator({ limit: -1 })
       .collect()
       .map((e) => e.payload.value);
-      return allitems;
+      for(let i=0;i<allitems.length;i++) {
+        if(allitems[i].uuid == uuid) {
+          resultItems.push(allitems[i]);
+        }
+      }
+      return resultItems;
   } catch(e) {
     console.log('_getDBItems',e);
     return {};
