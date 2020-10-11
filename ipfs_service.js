@@ -38,7 +38,7 @@
     return;
   }
 
-  const _getDBItems = async function() {
+  const _getDBItems = async function(orbitdburl) {
       const dbinstance = await orbitdb.eventlog(orbitdburl);
       dbinstance.load();
       const allitems = dbinstance.iterator({ limit: -1 })
