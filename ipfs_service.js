@@ -118,7 +118,7 @@
             remotecids[key] = value;
             delete remotecids[key].localHistory;
       }
-      const stats = await ipfs.add({path:'/p2p',content:JSON.stringify(remotcids)});
+      const stats = await ipfs.add({path:'/p2p',content:JSON.stringify(remotecids)});
       const addr = '' + stats.cid.toString()+'';
       ipfs.files.rm('/www/p2p').finally(async function () {
         await ipfs.files.cp('/ipfs/'+addr,'/www/p2p');
