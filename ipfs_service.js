@@ -40,15 +40,21 @@
   }
 
   const _getDBItems = async function(uuid) {
+    try {
     if(typeof dbs[msg.community.uuid] !== 'undefined') {
       const allitems = dbs[msg.community.uuid].iterator({ limit: -1 })
       .collect()
       .map((e) => e.payload.value);
       return allitems;
     } else return {};
+  } catch(e) {
+    console.log('_getDBItems',e);
+    return {};
+  }
   }
 
   const _storeDB = async function(msg) {
+    try {
       const onReady = async function()  {
         let historyItem = {
           time:msg.time,
@@ -58,14 +64,20 @@
               historyItem.stats[key] = value.energyPrice_kwh;
         }
         dbs[msg.community.uuid].add(historyItem);
+        return;
       }
       if(typeof dbs[msg.community.uuid] == 'undefined') {
           dbs[msg.community.uuid] = await orbitdb.eventlog(msg.community.uuid);
           dbs[msg.community.uuid].events.on('ready', () => {
             onReady();
           });
-      }
+      } else onReady();
+
       return '/orbitdb/'+dbs[msg.community.uuid]+'/'+dbs[msg.community.uuid];
+    } catch(e) {
+      console.log('_storeDB',e);
+      return;
+    }
   }
 
   const _publishMsg = async function(msg,alias) {
