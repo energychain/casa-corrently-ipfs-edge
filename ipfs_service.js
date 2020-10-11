@@ -41,8 +41,8 @@
 
   const _getDBItems = async function(uuid) {
     try {
-    if(typeof dbs[msg.community.uuid] !== 'undefined') {
-      const allitems = dbs[msg.community.uuid].iterator({ limit: -1 })
+    if(typeof dbs[uuid] !== 'undefined') {
+      const allitems = dbs[uuid].iterator({ limit: -1 })
       .collect()
       .map((e) => e.payload.value);
       return allitems;
