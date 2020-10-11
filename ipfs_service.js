@@ -24,7 +24,7 @@
   let lastdbhash = '';
   let lastBroadcast = new Date().getTime();
   let timeouts = {};
-  let dbs = {};
+  let historydb = null;
 
   const ipfsOptions = {
       EXPERIMENTAL: {
@@ -40,16 +40,12 @@
   }
 
   const _getDBItems = async function(uuid) {
-    console.log('DB',uuid);
     try {
-    if(typeof dbs[uuid] !== 'undefined') {
       console.log('_getDBItems',uuid);
-      const allitems = dbs[uuid].iterator({ limit: -1 })
+      const allitems = historydb.iterator({ limit: -1 })
       .collect()
       .map((e) => e.payload.value);
-      console.log(allitems);
       return allitems;
-    } else return {};
   } catch(e) {
     console.log('_getDBItems',e);
     return {};
@@ -61,24 +57,18 @@
       const onReady = async function()  {
         let historyItem = {
           time:msg.time,
+          uuid:msg.community.uuid,
           stats:{}
         };
         for (const [key, value] of Object.entries(msg.stats)) {
               historyItem.stats[key] = value.energyPrice_kwh;
         }
-        dbs[msg.community.uuid].add(historyItem);
+        historydb.add(historyItem);
         console.log('_storeDB',msg.community.uuid);
         return;
       }
-      if(typeof dbs[msg.community.uuid] == 'undefined') {
-          dbs[msg.community.uuid] = await orbitdb.eventlog(msg.community.uuid,{overwrite:true});
-          dbs[msg.community.uuid].events.on('ready', () => {
-            console.log('DB Ready',msg.community.uuid);
-            onReady();
-          });
-      } else onReady();
 
-      return '/orbitdb/'+dbs[msg.community.uuid].root+'/'+dbs[msg.community.uuid].path;
+      return '/orbitdb/'+historydb.address.root+'/'+historydb.address.path;
     } catch(e) {
       console.log('_storeDB',e);
       return;
@@ -304,6 +294,8 @@
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
       const www = await ipfs.files.mkdir('/www',{parents:true});
+      let historydb = await orbitdb.eventlog('history');
+
       await   _patchStatics();
 
     } catch(e) {
