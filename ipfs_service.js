@@ -40,11 +40,14 @@
   }
 
   const _getDBItems = async function(uuid) {
+    console.log('DB',uuid);
     try {
     if(typeof dbs[uuid] !== 'undefined') {
+      console.log('_getDBItems',uuid);
       const allitems = dbs[uuid].iterator({ limit: -1 })
       .collect()
       .map((e) => e.payload.value);
+      console.log(allitems);
       return allitems;
     } else return {};
   } catch(e) {
@@ -64,16 +67,18 @@
               historyItem.stats[key] = value.energyPrice_kwh;
         }
         dbs[msg.community.uuid].add(historyItem);
+        console.log('_storeDB',msg.community.uuid);
         return;
       }
       if(typeof dbs[msg.community.uuid] == 'undefined') {
-          dbs[msg.community.uuid] = await orbitdb.eventlog(msg.community.uuid);
+          dbs[msg.community.uuid] = await orbitdb.eventlog(msg.community.uuid,{overwrite:true});
           dbs[msg.community.uuid].events.on('ready', () => {
+            console.log('DB Ready',msg.community.uuid);
             onReady();
           });
       } else onReady();
 
-      return '/orbitdb/'+dbs[msg.community.uuid]+'/'+dbs[msg.community.uuid];
+      return '/orbitdb/'+dbs[msg.community.uuid].root+'/'+dbs[msg.community.uuid].path;
     } catch(e) {
       console.log('_storeDB',e);
       return;
@@ -242,7 +247,7 @@
                   "history":await _storeDB(_content)
                 }
                 try {
-                msgcids[json.alias].localHistory = await _getDBItems(msgcids[json.alias].history);
+                msgcids[json.alias].localHistory = await _getDBItems(_content.community.uuid);
               } catch(e) {
                 console.log('Error in _getDBItems',e);
               }
@@ -313,6 +318,7 @@
   parentPort.on('message',async function(data) {
     // eventuell muss hier eine Publish Que aufgebaut werden.
     await _publishMsg(data.msg,data.alias);
+
     return;
   });
 })();
