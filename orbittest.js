@@ -27,23 +27,25 @@ const boot = async function() {
   ipfs.swarm.connect("/ip4/136.244.111.239/tcp/4001/p2p/QmSt3Tz2HTfHqEpAZLRbzgXWUBxEq8kRLQM6PMmGvonirT").catch(function(e) { console.log(e); });
 
   orbitdb = await OrbitDB.createInstance(ipfs);
-  const dbinstance1 = await orbitdb.eventlog("/orbitdb/zdpuAucsyJsqvJPe9TgSKJdJrGMfmmpPH4XXFvqfVeJU6RN3y/openems_fems");
-  console.log('Connect');
-   await dbinstance1.load();
-   console.log('Loaded');
-   const all1 = dbinstance1.iterator({ limit: -1 })
-  .collect()
-  .map((e) => e.payload.value);
-  console.log('all1',all1);
+  console.log("Create");
+  const dbinstance1 = await orbitdb.eventlog("/orbitdb/zdpuAkfiCzLMtQTAwuVHJC1RXGq37DYwvpBRUV6LErQgSvgfT/openems_mf",{
 
-  const dbinstance2 = await orbitdb.eventlog("/orbitdb/zdpuAvuf9SmWvSNjTD8svi9Q51DabbKoZDbrbfAp8p9qHsifp/openems_mf");
-  console.log('Connect');
-   await dbinstance2.load();
-   console.log('Loaded');
-   const all2 = dbinstance2.iterator({ limit: -1 })
-  .collect()
-  .map((e) => e.payload.value);
-  console.log('all2',all2);
+  });
+  dbinstance1.events.on('ready', () => {
+    const items = log.iterator().collect().map(e => e.payload.value)
+    items.forEach(e => console.log(e.name))
+    // "hello world"
+  })
+
+  setTimeout(async function() {
+    console.log('Insance2');
+  const dbinstance2 = await orbitdb.eventlog("/orbitdb/zdpuAqTfsiSuqYMqD91fcFTw7zT7a5TD54736i88VzVCMwrBi/0xB8223C5aa7317B827A2dd3aEEb1a2d300E89A506");
+  dbinstance2.events.on('ready', () => {
+    const items = log.iterator().collect().map(e => e.payload.value)
+    items.forEach(e => console.log(e.name))
+    // "hello world"
+  })
+    },10000);
 ;  return;
 }
 

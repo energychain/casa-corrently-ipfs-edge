@@ -24,6 +24,7 @@
   let lastdbhash = '';
   let lastBroadcast = new Date().getTime();
   let timeouts = {};
+  let dbs = {};
 
   const ipfsOptions = {
       EXPERIMENTAL: {
@@ -38,32 +39,33 @@
     return;
   }
 
-  const _getDBItems = async function(orbitdburl) {
-      const dbinstance = await orbitdb.eventlog(orbitdburl);
-      dbinstance.load();
-      const allitems = dbinstance.iterator({ limit: -1 })
+  const _getDBItems = async function(uuid) {
+    if(typeof dbs[msg.community.uuid] !== 'undefined') {
+      const allitems = dbs[msg.community.uuid].iterator({ limit: -1 })
       .collect()
       .map((e) => e.payload.value);
       return allitems;
+    } else return {};
   }
 
   const _storeDB = async function(msg) {
-      if(orbitdb !== null) {
-          const dbinstance = await orbitdb.eventlog(msg.community.uuid);
-          let historyItem = {
-            time:msg.time,
-            stats:{}
-          };
-          for (const [key, value] of Object.entries(msg.stats)) {
-                historyItem.stats[key] = value.energyPrice_kwh;
-          }
-          dbinstance.add(historyItem);
-          console.log('DB','/orbitdb/'+dbinstance.address.root+'/'+dbinstance.address.path);
-          return '/orbitdb/'+dbinstance.address.root+'/'+dbinstance.address.path;
-      } else {
-        console.log('orbitdb is Null');
-        return '';
+      const onReady = async function()  {
+        let historyItem = {
+          time:msg.time,
+          stats:{}
+        };
+        for (const [key, value] of Object.entries(msg.stats)) {
+              historyItem.stats[key] = value.energyPrice_kwh;
+        }
+        dbs[msg.community.uuid].add(historyItem);
       }
+      if(typeof dbs[msg.community.uuid] == 'undefined') {
+          dbs[msg.community.uuid] = await orbitdb.eventlog(msg.community.uuid);
+          dbs[msg.community.uuid].events.on('ready', () => {
+            onReady();
+          });
+      }
+      return '/orbitdb/'+dbs[msg.community.uuid]+'/'+dbs[msg.community.uuid];
   }
 
   const _publishMsg = async function(msg,alias) {
