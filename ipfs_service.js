@@ -113,7 +113,7 @@
       }
   }
   const _publishBroadcast = async function() {
-      let remotcids = {};
+      let remotecids = {};
       for (const [key, value] of Object.entries(msgcids)) {
             remotecids[key] = value;
             delete remotecids[key].localHistory;
