@@ -40,6 +40,7 @@
   }
 
   const _getDBItems = async function(uuid) {
+    if(historydb == null) return;
     try {
       console.log('_getDBItems',uuid);
       const allitems = historydb.iterator({ limit: -1 })
@@ -53,8 +54,9 @@
   }
 
   const _storeDB = async function(msg) {
+    if(historydb == null) return;
     try {
-      const onReady = async function()  {
+
         let historyItem = {
           time:msg.time,
           uuid:msg.community.uuid,
@@ -65,8 +67,6 @@
         }
         historydb.add(historyItem);
         console.log('_storeDB',msg.community.uuid);
-        return;
-      }
 
       return '/orbitdb/'+historydb.address.root+'/'+historydb.address.path;
     } catch(e) {
@@ -294,7 +294,7 @@
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
       const www = await ipfs.files.mkdir('/www',{parents:true});
-      let historydb = await orbitdb.eventlog('history');
+      historydb = await orbitdb.eventlog('history');
 
       await   _patchStatics();
 
