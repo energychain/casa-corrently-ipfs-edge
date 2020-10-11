@@ -55,7 +55,10 @@ module.exports = function(config) {
       },
       publish: async function(msg,alias) {
           if(ipfs_service == null) await _ipfs_init(config);
-          ipfs_service.postMessage({"msg":msg,"alias":alias})
+          ipfs_service.postMessage({"msg":msg,"alias":alias});
+          if((typeof msgcids[cid]!== 'undefined') && (typeof msgcids[cid].localHistory !== 'undefined')) {
+              return msgcids[cid].localHistory;
+          } else return [];
       }
     }
 };
