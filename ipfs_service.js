@@ -59,6 +59,9 @@
 
   const _storeDB = async function(msg) {
     if(historydb == null) return;
+    if(typeof msg == 'undefined') return;
+    if(typeof msg.community == 'undefined') return;
+
     try {
 
         let historyItem = {
