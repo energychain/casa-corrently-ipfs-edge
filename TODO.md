@@ -1,0 +1,3 @@
+- LocalHistory is held in Memory over worker, db and main task (3 times)
+- No Retention policy for history
+- Possible Security issue by flooding history items
