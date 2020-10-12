@@ -56,9 +56,13 @@ module.exports = function(config) {
       publish: async function(msg,alias) {
           if(ipfs_service == null) await _ipfs_init(config);
           ipfs_service.postMessage({"msg":msg,"alias":alias});
-          if((typeof msgcids[msg.community.uuid]!== 'undefined') && (typeof msgcids[msg.community.uuid].localHistory !== 'undefined')) {
-              return msgcids[msg.community.uuid].localHistory;
-          } else return [];
+          let localHistory = [];
+          for (const [key, content] of Object.entries(msgcids)) {
+              if((typeof content.localHistory !== 'undefined') && (content.localHistory.length >0) && ( content.localHistory[0].uuid == msg.community.uuid)) {
+                localHistory = content.localHistory;
+              }
+          }
+          return localHistory;
       }
     }
 };
