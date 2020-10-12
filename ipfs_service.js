@@ -35,7 +35,6 @@
   const _patchStatics = async function() {
     await ipfs.files.cp('/ipfs/QmRnHDbneUMDjQD9SZj3erhvSS5xSt8UDVWoPfhXm1FPdX/','/www',{parents:true});
     // await ipfs.files.cp('/QmRnHDbneUMDjQD9SZj3erhvSS5xSt8UDVWoPfhXm1FPdX','/www',{parents:true});
-    console.log('Patch Statics completed');
     return;
   }
 
@@ -43,7 +42,6 @@
     if(historydb == null) return;
     try {
       let resultItems = [];
-      console.log('_getDBItems',uuid);
       const allitems = historydb.iterator({ limit: -1 })
       .collect()
       .map((e) => e.payload.value);
@@ -72,8 +70,6 @@
               historyItem.stats[key] = value.energyPrice_kwh;
         }
         historydb.add(historyItem);
-        console.log('_storeDB',msg.community.uuid);
-
       return '/orbitdb/'+historydb.address.root+'/'+historydb.address.path;
     } catch(e) {
       console.log('_storeDB',e);
@@ -83,7 +79,7 @@
 
   const _publishMsg = async function(msg,alias) {
       if(typeof alias == 'undefined') {
-        alias='';
+        alias='local';
       } else if(alias == null) alias = msg.name;
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
@@ -143,9 +139,8 @@
                 pathcid = file.cid.toString();
               }
         }
-        ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr,mfs:pathcid}));
+        ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr,mfs:pathcid,history:'/orbitdb/'+historydb.address.root+'/'+historydb.address.path}));
         const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
-        console.log("Local Broadcast to /ipns/"+lhash.name,"mfs: "+pathcid, "cid:",addr);
       });
       return;
   }
@@ -239,8 +234,10 @@
                 msgcids[json.alias] = {
                   "at":json.at,
                   "on":new Date().getTime(),
-                  "content":content,
-                  "history":await _storeDB(_content)
+                  "content":content
+                }
+                if(typeof config.remoteHistory !== 'undefined') {
+                  msgcids[json.alias].history = await _storeDB(_content);
                 }
                 try {
                 msgcids[json.alias].localHistory = await _getDBItems(_content.community.uuid);
@@ -317,7 +314,6 @@
   parentPort.on('message',async function(data) {
     // eventuell muss hier eine Publish Que aufgebaut werden.
     await _publishMsg(data.msg,data.alias);
-
     return;
   });
 })();
