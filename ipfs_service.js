@@ -248,6 +248,7 @@
                 console.log('Error in _getDBItems',e);
               }
                 parentPort.postMessage({ msgcids, status: 'New' });
+                delete msgcids[json.alias].localHistory;
               }
             }
           } catch(e) {
@@ -301,7 +302,7 @@
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
       const www = await ipfs.files.mkdir('/www',{parents:true});
       historydb = await orbitdb.eventlog('history');
-
+      await _getDBItems(config.uuid);
       await   _patchStatics();
 
     } catch(e) {
