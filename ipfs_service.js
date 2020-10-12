@@ -50,6 +50,7 @@
           resultItems.push(allitems[i]);
         }
       }
+      console.log('_getDBItems('+uuid+'):'+resultItems.length+'/'+allitems.length);
       return resultItems;
   } catch(e) {
     console.log('_getDBItems',e);
@@ -95,7 +96,7 @@
                 pathcid = file.cid.toString();
               }
         }
-        msg.community.uuid=alias;
+        if(typeof msg.community !== 'undefined') msg.community.uuid=alias;
         ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,mfs:pathcid}));
       });
       let history = await _storeDB(msg);
