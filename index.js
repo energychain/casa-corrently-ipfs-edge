@@ -64,5 +64,15 @@ module.exports = function(config) {
           }
           return localHistory;
       }
+    },
+    history:async function(uuid) {
+        if(ipfs_service == null) await _ipfs_init(config);
+        let localHistory = [];
+        for (const [key, content] of Object.entries(msgcids)) {
+            if((typeof content.localHistory !== 'undefined') && (content.localHistory.length >0) && ( content.localHistory[0].uuid == uuid)) {
+              localHistory = content.localHistory;
+            }
+        }
+        return localHistory;
     }
 };
