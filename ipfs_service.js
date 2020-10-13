@@ -299,7 +299,7 @@
               }
           } catch(e) {
             timeouts[msg.from] = new Date().getTime();
-            console.log('Timeout List',timeouts);
+            console.log('Timeout List',timeouts,e);
           }
 
         }
