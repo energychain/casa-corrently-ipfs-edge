@@ -40,24 +40,19 @@
     return;
   }
 
-  const _getDBItems = async function(uuid) {
+  const _getDBItems = async function() {
     if(historydb == null) return;
     try {
       let resultItems = [];
+      await historydb.load();
       const allitems = historydb.iterator({ limit: -1 })
       .collect()
       .map((e) => e.payload.value);
-      for(let i=0;i<allitems.length;i++) {
-        if(allitems[i].uuid == uuid) {
-          resultItems.push(allitems[i]);
-        }
-      }
-      console.log('_getDBItems('+uuid+'):'+resultItems.length+'/'+allitems.length);
-      return resultItems;
-  } catch(e) {
-    console.log('_getDBItems',e);
-    return {};
-  }
+      return allitems;
+    } catch(e) {
+      console.log('_getDBItems',e);
+      return {};
+    }
   }
 
   const _storeDB = async function(msg) {
@@ -76,7 +71,7 @@
               historyItem.stats[key] = value.energyPrice_kwh;
         }
         historydb.add(historyItem);
-      return '/orbitdb/'+historydb.address.root+'/'+historydb.address.path;
+        return '/orbitdb/'+historydb.address.root+'/'+historydb.address.path;
     } catch(e) {
       console.log('_storeDB',e);
       return;
@@ -253,7 +248,7 @@
               } catch(e) {
                 console.log('Error in _getDBItems',e);
               }
-                parentPort.postMessage({ msgcids, status: 'New' });
+                parentPort.postMessage({ {'msgcids':msgcids,'history':await _getDBItems()}, status: 'New' });
                 // TODO Add Memory Cleanup again delete msgcids[json.alias].localHistory;
               }
             }
@@ -315,7 +310,7 @@
       const www = await ipfs.files.mkdir('/www',{parents:true});
       historydb = await orbitdb.eventlog('history');
       await historydb.load();
-      await _getDBItems(config.uuid);
+      await _getDBItems();
       await _patchStatics();
       console.log('Init finished');
     } catch(e) {

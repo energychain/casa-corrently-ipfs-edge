@@ -4,6 +4,7 @@ module.exports = function(config) {
   let ipfs_service = null;
 
   let msgcids = {};
+  let history = {};
 
   const _ipfs_init = async function(config) {
     const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
@@ -16,6 +17,9 @@ module.exports = function(config) {
     ipfs_service.on('message', function(_data) {
       if(typeof _data.msgcids !== 'undefined') {
         msgcids = _data.msgcids;
+      }
+      if(typeof _data.history !== 'undefined') {
+        history = _data.history;
       }
     });
     ipfs_service.on('error', function(e) {
@@ -52,6 +56,9 @@ module.exports = function(config) {
       },
       statics:async function() {
           if(ipfs_service == null) await _ipfs_init(config);
+      },
+      history:async function() {
+          return history;
       },
       publish: async function(msg,alias) {
           if(ipfs_service == null) await _ipfs_init(config);
