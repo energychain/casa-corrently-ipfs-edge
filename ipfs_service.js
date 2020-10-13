@@ -248,7 +248,7 @@
               } catch(e) {
                 console.log('Error in _getDBItems',e);
               }
-                parentPort.postMessage({ {'msgcids':msgcids,'history':await _getDBItems()}, status: 'New' });
+                parentPort.postMessage({ 'msgcids':msgcids,'history':await _getDBItems(), status: 'New' });
                 // TODO Add Memory Cleanup again delete msgcids[json.alias].localHistory;
               }
             }
