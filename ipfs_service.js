@@ -317,6 +317,7 @@
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
       const www = await ipfs.files.mkdir('/www',{parents:true});
       historydb = await orbitdb.eventlog('history');
+      await historydb.load();
       await _getDBItems(config.uuid);
       await   _patchStatics();
       console.log('Init finished');
