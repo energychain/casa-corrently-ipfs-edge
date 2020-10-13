@@ -248,11 +248,8 @@
                   "on":new Date().getTime(),
                   "content":content
                 }
-                if(typeof config.remoteHistory !== 'undefined') {
-                  msgcids[json.alias].history = await _storeDB(_content);
-                }
                 try {
-                  msgcids[json.alias].localHistory = await _getDBItems(_content.community.uuid);
+
               } catch(e) {
                 console.log('Error in _getDBItems',e);
               }
@@ -319,7 +316,7 @@
       historydb = await orbitdb.eventlog('history');
       await historydb.load();
       await _getDBItems(config.uuid);
-      await   _patchStatics();
+      await _patchStatics();
       console.log('Init finished');
     } catch(e) {
       console.log(e);
