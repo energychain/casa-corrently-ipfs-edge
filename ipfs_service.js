@@ -85,6 +85,9 @@
       if(typeof alias == 'undefined') {
         alias='local';
       } else if(alias == null) alias = msg.name;
+      if(typeof msg.community !== 'undefined') {
+        alias = msg.community.uuid;
+      }
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
       ipfs.files.rm('/www/msg').finally(async function () {
@@ -96,7 +99,7 @@
                 pathcid = file.cid.toString();
               }
         }
-        if(typeof msg.community !== 'undefined') msg.community.uuid=alias;
+
         ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,mfs:pathcid}));
       });
       let history = await _storeDB(msg);
@@ -235,6 +238,9 @@
             if(isnew) {
               let _content = JSON.parse(content);
               if(_content.time > new Date().getTime() - PURGE_AGE) {
+                if(typeof _content.community !== 'undefined') {
+                  json.alias = _content.community.uuid;
+                }
                 msgcids[json.alias] = {
                   "at":json.at,
                   "on":new Date().getTime(),
@@ -249,7 +255,7 @@
                 console.log('Error in _getDBItems',e);
               }
                 parentPort.postMessage({ msgcids, status: 'New' });
-                delete msgcids[json.alias].localHistory;
+                // TODO Add Memory Cleanup again delete msgcids[json.alias].localHistory;
               }
             }
           } catch(e) {
