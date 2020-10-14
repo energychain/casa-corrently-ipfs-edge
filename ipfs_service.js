@@ -39,7 +39,7 @@
 
   const _getDBItems = async function() {
     return new Promise(async function (resolve, reject)  {
-        if(historydb == null) resolve([]); else {
+        historydb = await hypercore('./history', {valueEncoding: 'json'});
           try {
             historydb.head({wait:true,valueEncoding:'json'},function(err,data) {
               console.log('_getDBItems',err);
