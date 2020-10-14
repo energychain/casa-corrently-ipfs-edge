@@ -3,7 +3,7 @@
   const config = workerData;
   const IPFS = require("ipfs");
   const CLIENT = require("ipfs-http-client");
-  const OrbitDB = require('orbit-db');
+  const hypercore = require('hypercore');
   const axios = require("axios");
   const glob = require("glob");
   const fs = require("fs");
@@ -17,7 +17,6 @@
   let msgcids = {};
   let selfID='jkdfhhdf';
   let ipfs = null;
-  let db = null;
   let lastMsg = 0;
   let dbready = false;
   let dbaddress = '';
@@ -25,7 +24,6 @@
   let lastBroadcast = new Date().getTime();
   let timeouts = {};
   let historydb = null;
-  let orbitdb = null;
 
   const ipfsOptions = {
       EXPERIMENTAL: {
@@ -40,18 +38,17 @@
   }
 
   const _getDBItems = async function() {
-    if(historydb == null) return;
-    try {
-      let resultItems = [];
-      await historydb.load();
-      const allitems = historydb.iterator({ limit: -1 })
-      .collect()
-      .map((e) => e.payload.value);
-      return allitems;
-    } catch(e) {
-      console.log('_getDBItems',e);
-      return {};
-    }
+    return new Promise(async function (resolve, reject)  {
+        if(historydb == null) resolve({});
+        try {
+          historydb.head({wait:true,valueEncoding:'json'},function(err,data) {
+            resolve(data);
+          });
+        } catch(e) {
+          console.log('_getDBItems',e);
+          resolve({});
+        }
+    });
   }
 
   const _storeDB = async function(msg) {
@@ -69,9 +66,9 @@
         for (const [key, value] of Object.entries(msg.stats)) {
               historyItem.stats[key] = value.energyPrice_kwh;
         }
-        historydb.add(historyItem);
+        historydb.append(historyItem);
         console.log('_storeDB');
-        return '/orbitdb/'+historydb.address.root+'/'+historydb.address.path;
+        return '';
     } catch(e) {
       console.log('_storeDB',e);
       return;
@@ -143,7 +140,7 @@
                 pathcid = file.cid.toString();
               }
         }
-        ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr,mfs:pathcid,history:'/orbitdb/'+historydb.address.root+'/'+historydb.address.path}));
+        ipfs.pubsub.publish(topic,JSON.stringify({broadcast:addr,mfs:pathcid}));
         const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
       });
       return;
@@ -191,7 +188,6 @@
       ipfs.swarm.connect("/ip6/2604:a880:1:20::1d9:6001/tcp/4001/p2p/QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/108.61.210.201/tcp/4012/p2p/QmU14oFSdrfRmJb4U7ygeb6Q5fbGi9rRb89bmWxPm74bhV").catch(function(e) { console.log(e); });
       ipfs.swarm.connect("/ip4/136.244.111.239/tcp/4001/p2p/QmSt3Tz2HTfHqEpAZLRbzgXWUBxEq8kRLQM6PMmGvonirT").catch(function(e) { console.log(e); });
-      orbitdb = await OrbitDB.createInstance(ipfs);
 
       setInterval(_publishBroadcast,900000);
       setInterval(_purgeCids,850123);
@@ -302,8 +298,8 @@
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
       const www = await ipfs.files.mkdir('/www',{parents:true});
-      historydb = await orbitdb.eventlog('history');
-      await historydb.load();
+      historydb = await hypercore('./orbitdb', {valueEncoding: 'json'});
+
       await _getDBItems();
       await _patchStatics();
       console.log('Init finished');

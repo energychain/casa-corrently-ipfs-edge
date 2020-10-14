@@ -1,6 +1,6 @@
 {
   "name": "casa-corrently-ipfs-edge",
-  "version": "1.1.45",
+  "version": "1.1.46",
   "description": "Casa Corrently IPFS based Edge",
   "main": "index.js",
   "scripts": {
@@ -36,9 +36,9 @@
     "casa-corrently": "^1.0.17",
     "casa-corrently-ipfs-bridge": "^1.0.2",
     "glob": "^7.1.6",
+    "hypercore": "^9.5.6",
     "ipfs": "^0.50.2",
     "ipfs-http-client": "^47.0.1",
-    "multiaddr": "^8.0.0",
-    "orbit-db": "^0.26.0"
+    "multiaddr": "^8.0.0"
   }
 }
