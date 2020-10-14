@@ -42,6 +42,7 @@
         if(historydb == null) resolve({});
         try {
           historydb.head({wait:true,valueEncoding:'json'},function(err,data) {
+            console.log('_getDBItems',err);
             resolve(data);
           });
         } catch(e) {
