@@ -41,7 +41,7 @@
     return new Promise(async function (resolve, reject)  {
           try {
             historydb.head({wait:true,valueEncoding:'json'},function(err,data) {
-              console.log('_getDBItems',err);
+              console.log('_getDBItems',err,data.length);
               resolve(data);
             });
           } catch(e) {
