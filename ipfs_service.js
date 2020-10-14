@@ -105,7 +105,7 @@
         history:history,
         content:JSON.stringify(msg)
       }
-
+      parentPort.postMessage({ 'msgcids':msgcids,'history':await _getDBItems(), status: 'New' });
       return;
   }
 
