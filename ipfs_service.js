@@ -56,7 +56,7 @@
     if(historydb == null) return;
     if(typeof msg == 'undefined') return;
     if(typeof msg.community == 'undefined') return;
-
+    if(! historydb.writable)  return;
     try {
 
         let historyItem = {
