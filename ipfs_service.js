@@ -40,7 +40,7 @@
   const _getDBItems = async function() {
     return new Promise(async function (resolve, reject)  {
           try {
-            historydb.head({ update: true, ifAvailable: true ,valueEncoding:'json'},function(err,data) {
+            historydb.getBatch(0,historydb.length-1,{ wait: true,valueEncoding:'json'},function(err,data) {
               console.log('_getDBItems',err,data.length);
               resolve(data);
             });
@@ -55,7 +55,10 @@
     if(historydb == null) return;
     if(typeof msg == 'undefined') return;
     if(typeof msg.community == 'undefined') return;
-    if(! historydb.writable)  return;
+    if(! historydb.writable)  {
+      console.log('_storeDB:Not writable');
+      return;
+    }
     try {
 
         let historyItem = {
@@ -66,7 +69,15 @@
         for (const [key, value] of Object.entries(msg.stats)) {
               historyItem.stats[key] = value.energyPrice_kwh;
         }
-        historydb.append(historyItem);
+        if(historydb.length >0 ) {
+            historydb.get(0,historydb.length-1,{ wait: true,valueEncoding:'json'},function(err,data) {
+                if(data.time < new Date().getTime()-900000) {
+                  historydb.append(historyItem);
+                }
+            });
+        } else {
+          historydb.append(historyItem);
+        }
         console.log('_storeDB');
         historydb.flush();
         return '';
@@ -299,7 +310,7 @@
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
       const www = await ipfs.files.mkdir('/www',{parents:true});
-      historydb = await hypercore('./history', {valueEncoding: 'json'});
+      historydb = await hypercore('./history', {valueEncoding: 'json',sparse: true});
 
       await _getDBItems();
       await _patchStatics();
