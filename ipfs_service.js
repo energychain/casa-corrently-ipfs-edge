@@ -68,6 +68,7 @@
         }
         historydb.append(historyItem);
         console.log('_storeDB');
+        historydb.flush();
         return '';
     } catch(e) {
       console.log('_storeDB',e);
