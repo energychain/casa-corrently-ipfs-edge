@@ -18,7 +18,6 @@
   let selfID='jkdfhhdf';
   let ipfs = null;
   let db = null;
-  let dbs = {};
   let lastMsg = 0;
   let dbready = false;
   let dbaddress = '';
@@ -282,12 +281,6 @@
                     json.at = value.at;
                     await parseSingle(json);
                   }
-              }
-              if(typeof json.history !== 'undefined') {
-                if(typeof dbs[msg.from] == 'undefined') {
-                  dbs[msg.from] = await orbitdb.eventlog(json.history);
-                  console.log('Added DB for Replication',json.history);
-                }
               }
           } catch(e) {
             timeouts[msg.from] = new Date().getTime();
