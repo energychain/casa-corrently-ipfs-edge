@@ -70,6 +70,7 @@
               historyItem.stats[key] = value.energyPrice_kwh;
         }
         historydb.add(historyItem);
+        console.log('_storeDB');
         return '/orbitdb/'+historydb.address.root+'/'+historydb.address.path;
     } catch(e) {
       console.log('_storeDB',e);
