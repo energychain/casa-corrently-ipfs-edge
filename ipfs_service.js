@@ -40,10 +40,12 @@
   const _getDBItems = async function() {
     return new Promise(async function (resolve, reject)  {
           try {
+            if(historydb.length > 0) {
             historydb.getBatch(0,historydb.length-1,{ wait: true,valueEncoding:'json'},function(err,data) {
               console.log('_getDBItems',err,data.length);
               resolve(data);
             });
+          } else resolve([]);
           } catch(e) {
             console.log('_getDBItems',e);
             resolve([]);
