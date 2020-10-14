@@ -39,7 +39,6 @@
 
   const _getDBItems = async function() {
     return new Promise(async function (resolve, reject)  {
-        historydb = await hypercore('./history', {valueEncoding: 'json'});
           try {
             historydb.head({wait:true,valueEncoding:'json'},function(err,data) {
               console.log('_getDBItems',err);
@@ -299,7 +298,7 @@
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
       const www = await ipfs.files.mkdir('/www',{parents:true});
-      historydb = await hypercore('./orbitdb', {valueEncoding: 'json'});
+      historydb = await hypercore('./history', {valueEncoding: 'json'});
 
       await _getDBItems();
       await _patchStatics();
