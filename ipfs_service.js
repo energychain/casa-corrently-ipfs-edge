@@ -40,7 +40,7 @@
   const _getDBItems = async function() {
     return new Promise(async function (resolve, reject)  {
           try {
-            historydb.head({wait:true,valueEncoding:'json'},function(err,data) {
+            historydb.head({ update: true, ifAvailable: true ,valueEncoding:'json'},function(err,data) {
               console.log('_getDBItems',err,data.length);
               resolve(data);
             });
