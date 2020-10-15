@@ -92,12 +92,14 @@
   }
 
   const _publishMsg = async function(msg,alias) {
+    try {
       if(typeof alias == 'undefined') {
         alias='local';
       } else if(alias == null) alias = msg.name;
       if(typeof msg.community !== 'undefined') {
         alias = msg.community.uuid;
       }
+      console.log('Publish as alias',alias);
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
       ipfs.files.rm('/www/msg').finally(async function () {
@@ -112,6 +114,7 @@
 
         ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,mfs:pathcid}));
       });
+
       let history = await _storeDB(msg);
 
       lastMsg = new Date().getTime();
@@ -123,6 +126,10 @@
       }
       parentPort.postMessage({ 'msgcids':msgcids,'history':await _getDBItems(), status: 'New' });
       return;
+    } catch(e) {
+      console.log('_publishMsg',e);
+      return;
+    }
   }
 
   const _purgeCids = async function() {
