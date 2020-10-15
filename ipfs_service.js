@@ -61,8 +61,14 @@
       console.log('_storeDB: null');
       return;
     }
-    if(typeof msg == 'undefined') return;
-    if(typeof msg.community == 'undefined') return;
+    if(typeof msg == 'undefined') {
+        console.log('_storeDB: msg typeof undefined');
+      return;
+    }
+    if(typeof msg.community == 'undefined') {
+      console.log('_storeDB: missing community');
+      return;
+    }
     console.log('_storeDB start',historydb.length);
     try {
       if(! historydb.writable)  {
