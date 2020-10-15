@@ -28,6 +28,10 @@ module.exports = function(config) {
     ipfs_service.on('exit', (code) => {
       console.log('Exit Worker');
       if (code !== 0)
+        setTimeout(function() {
+          console.log('Try Restart after Delay');
+          _ipfs_init(config);
+        },30000);
         throw new Error(`Worker stopped with exit code ${code}`);
      });
      console.log('Ipfs Service started');
