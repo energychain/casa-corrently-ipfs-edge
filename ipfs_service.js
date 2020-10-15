@@ -100,6 +100,8 @@
         alias = msg.community.uuid;
       }
       console.log('Publish as alias',alias);
+      let history = await _storeDB(msg);
+
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
       ipfs.files.rm('/www/msg').finally(async function () {
@@ -115,7 +117,7 @@
         ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,mfs:pathcid}));
       });
 
-      let history = await _storeDB(msg);
+
 
       lastMsg = new Date().getTime();
       msgcids[alias] = {
