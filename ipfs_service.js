@@ -71,8 +71,7 @@
           uuid: msg.meterinfo.meterId
         };
       }
-      console.log('_storeDB: missing community',msg);
-      return;
+      console.log('_storeDB: missing community');
     }
     console.log('_storeDB start',historydb.length);
     try {
