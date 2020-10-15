@@ -323,7 +323,7 @@
   console.log('Bootstrap IPFS for Casa Corrently');
   await _ipfs_init(config);
   parentPort.on('message',async function(data) {
-    // eventuell muss hier eine Publish Que aufgebaut werden.
+    console.log('Ipfs Publishing');
     await _publishMsg(data.msg,data.alias);
     return;
   });
