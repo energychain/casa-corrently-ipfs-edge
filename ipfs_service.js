@@ -45,7 +45,10 @@
                   console.log('_getDBItems',err,data.length);
                   resolve(data);
                 });
-              } else resolve([]);
+              } else {
+                  console.log('_getDBItems(empty)');
+                resolve([]);
+              }
           } catch(e) {
             console.log('_getDBItems',e);
             resolve([]);
@@ -54,10 +57,13 @@
   }
 
   const _storeDB = async function(msg) {
-    if(historydb == null) return;
+    if(historydb == null) {
+      console.log('_storeDB: null');
+      return;
+    }
     if(typeof msg == 'undefined') return;
     if(typeof msg.community == 'undefined') return;
-
+    console.log('_storeDB start',historydb.length);
     try {
       if(! historydb.writable)  {
         console.log('_storeDB:Not writable');
@@ -76,7 +82,7 @@
         } else {
           historydb.append(historyItem);
         }
-        console.log('_storeDB');
+        console.log('_storeDB end',historydb.length);
         historydb.flush();
         return '';
     } catch(e) {

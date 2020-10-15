@@ -15,12 +15,13 @@ module.exports = function(config) {
 
     ipfs_service = new Worker(workerFile,{workerData:config});
     ipfs_service.on('message', function(_data) {
-      console.log('Msg from IPFS');
+
       if(typeof _data.msgcids !== 'undefined') {
         msgcids = _data.msgcids;
       }
       if(typeof _data.history !== 'undefined') {
         history = _data.history;
+        console.log('History Update ',history.length);
       }
     });
     ipfs_service.on('error', function(e) {
