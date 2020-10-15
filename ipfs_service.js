@@ -66,6 +66,11 @@
       return;
     }
     if(typeof msg.community == 'undefined') {
+      if(typeof msg.meterinfo !== 'undefined') {
+        msg.community = {
+          uuid: msg.meterinfo.meterId
+        };
+      }
       console.log('_storeDB: missing community',msg);
       return;
     }
