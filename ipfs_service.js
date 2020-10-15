@@ -66,7 +66,7 @@
       return;
     }
     if(typeof msg.community == 'undefined') {
-      console.log('_storeDB: missing community');
+      console.log('_storeDB: missing community',msg);
       return;
     }
     console.log('_storeDB start',historydb.length);
