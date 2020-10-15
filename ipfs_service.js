@@ -41,11 +41,11 @@
     return new Promise(async function (resolve, reject)  {
           try {
             if(historydb.length > 0) {
-            historydb.getBatch(0,historydb.length-1,{ wait: true,valueEncoding:'json'},function(err,data) {
-              console.log('_getDBItems',err,data.length);
-              resolve(data);
-            });
-          } else resolve([]);
+                historydb.getBatch(0,historydb.length-1,{ wait: true,valueEncoding:'json'},function(err,data) {
+                  console.log('_getDBItems',err,data.length);
+                  resolve(data);
+                });
+              } else resolve([]);
           } catch(e) {
             console.log('_getDBItems',e);
             resolve([]);
@@ -57,12 +57,12 @@
     if(historydb == null) return;
     if(typeof msg == 'undefined') return;
     if(typeof msg.community == 'undefined') return;
-    if(! historydb.writable)  {
-      console.log('_storeDB:Not writable');
-      return;
-    }
-    try {
 
+    try {
+      if(! historydb.writable)  {
+        console.log('_storeDB:Not writable');
+        return;
+      }
         let historyItem = {
           time:msg.time,
           uuid:msg.community.uuid,
@@ -72,11 +72,7 @@
               historyItem.stats[key] = value.energyPrice_kwh;
         }
         if(historydb.length >0 ) {
-            historydb.get(0,historydb.length-1,{ wait: true,valueEncoding:'json'},function(err,data) {
-                if(data.time < new Date().getTime()-900000) {
-                  historydb.append(historyItem);
-                }
-            });
+          historydb.append(historyItem);
         } else {
           historydb.append(historyItem);
         }
