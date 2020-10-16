@@ -114,6 +114,9 @@
 
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
+      const historycid = await ipfs.add({path:'/history' + alias,content:JSON.stringify(await _getDBItems())});
+      const addrhist = '' + historycid.cid.toString()+'';
+
       ipfs.files.rm('/www/msg').finally(async function () {
         await ipfs.files.cp('/ipfs/'+addr,'/www/msg');
 
@@ -124,16 +127,14 @@
               }
         }
 
-        ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,mfs:pathcid}));
+        ipfs.pubsub.publish(topic,JSON.stringify({at:addr,alias:alias,mfs:pathcid,history:addrhist}));
       });
-
-
 
       lastMsg = new Date().getTime();
       msgcids[alias] = {
         on:lastMsg,
         at:addr,
-        history:history,
+        history:addrhist,
         content:JSON.stringify(msg)
       }
       parentPort.postMessage({ 'msgcids':msgcids,'history':await _getDBItems(), status: 'New' });
@@ -274,11 +275,9 @@
                   "on":new Date().getTime(),
                   "content":content
                 }
-                try {
-
-              } catch(e) {
-                console.log('Error in _getDBItems',e);
-              }
+                if(typeof json.history !== 'undefined') {
+                  msgcids[json.alias].history = json.history;
+                }
                 parentPort.postMessage({ 'msgcids':msgcids,'history':await _getDBItems(), status: 'New' });
                 // TODO Add Memory Cleanup again delete msgcids[json.alias].localHistory;
               }
