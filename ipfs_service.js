@@ -310,6 +310,9 @@
                     json.from = key;
                     json.alias = key;
                     json.at = value.at;
+                    if(typeof value.history !== 'undefined') {
+                      json.history = value.history;
+                    }
                     await parseSingle(json);
                   }
               }
