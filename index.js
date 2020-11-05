@@ -5,6 +5,7 @@ module.exports = function(config) {
 
   let msgcids = {};
   let history = {};
+  let archiver = null;
 
   const _ipfs_init = async function(config) {
     const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
@@ -37,6 +38,12 @@ module.exports = function(config) {
         throw new Error(`Worker stopped with exit code ${code}`);
      });
      console.log('Ipfs Service started');
+
+     if(typeof config.archiver !== 'undefined') {
+       const CCDA = require(config.archiver);
+       archiver = new CCDA(config);
+       console.log('Archiver Service attached');
+     }
      return;
   };
 
@@ -64,11 +71,18 @@ module.exports = function(config) {
           if(ipfs_service == null) await _ipfs_init(config);
       },
       history:async function() {
+        if(archiver !== null) {
+            return await archiver.history();
+        } else {
           return history;
+        }
       },
       publish: async function(msg,alias) {
           if(ipfs_service == null) await _ipfs_init(config);
           ipfs_service.postMessage({"msg":msg,"alias":alias});
+          if(archiver !== null) {
+            archiver.publish(msg);
+          }
       }
     }
 };
