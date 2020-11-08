@@ -42,15 +42,12 @@
           try {
             if(historydb.length > 0) {
                 historydb.getBatch(0,historydb.length-1,{ wait: true,valueEncoding:'json'},function(err,data) {
-                  console.log('_getDBItems',err,data.length);
                   resolve(data);
                 });
               } else {
-                  console.log('_getDBItems(empty)');
                 resolve([]);
               }
           } catch(e) {
-            console.log('_getDBItems',e);
             resolve([]);
           }
     });
