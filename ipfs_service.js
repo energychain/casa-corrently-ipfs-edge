@@ -98,7 +98,7 @@
     }
   }
 
-  const _publishMsg = async function(msg,alias) {
+  const _publishMsg = async function(msg,alias,ohistory) {
     try {
       if(typeof alias == 'undefined') {
         alias='local';
@@ -111,7 +111,13 @@
 
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
       const addr = '' + stats.cid.toString()+'';
-      const historycid = await ipfs.add({path:'/history' + alias,content:JSON.stringify(await _getDBItems())});
+      let lhistory = [];
+      if((typeof ohistory !=='undefined') && (ohistory!== null)) {
+        lhistory = ohistory;
+      } else {
+        lhistory = await _getDBItems();
+      }
+      const historycid = await ipfs.add({path:'/history' + alias,content:JSON.stringify(lhistory)});
       const addrhist = '' + historycid.cid.toString()+'';
 
       ipfs.files.rm('/www/msg').finally(async function () {
@@ -348,7 +354,7 @@
   await _ipfs_init(config);
   parentPort.on('message',async function(data) {
     console.log('Ipfs Publishing');
-    await _publishMsg(data.msg,data.alias);
+    await _publishMsg(data.msg,data.alias,data.history);
     return;
   });
 })();

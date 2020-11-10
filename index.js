@@ -77,9 +77,9 @@ module.exports = function(config) {
           return history;
         }
       },
-      publish: async function(msg,alias) {
+      publish: async function(msg,alias,history) {
           if(ipfs_service == null) await _ipfs_init(config);
-          ipfs_service.postMessage({"msg":msg,"alias":alias});
+          ipfs_service.postMessage({"msg":msg,"alias":alias,"history":history});
           if(archiver !== null) {
             archiver.publish(msg);
           }
