@@ -22,27 +22,27 @@ module.exports = function(config) {
       }
       if(typeof _data.history !== 'undefined') {
         history = _data.history;
-        console.log('History Update ',history.length);
+        console.log('ipfs-main:History Update ',history.length);
       }
     });
     ipfs_service.on('error', function(e) {
-      console.log('Error in Worker',e);
+      console.log('ipfs-main:Error in Worker',e);
     });
     ipfs_service.on('exit', (code) => {
-      console.log('Exit Worker');
+      console.log('ipfs-main:Exit Worker');
       if (code !== 0)
         setTimeout(function() {
-          console.log('Try Restart after Delay');
+          console.log('ipfs-main:Try Restart after Delay');
           _ipfs_init(config);
         },30000);
-        throw new Error(`Worker stopped with exit code ${code}`);
+        throw new Error(`ipfs-main:Worker stopped with exit code ${code}`);
      });
-     console.log('Ipfs Service started');
+     console.log('ipfs-main:Ipfs Service started');
 
      if(typeof config.archiver !== 'undefined') {
        const CCDA = require(config.archiver);
        archiver = new CCDA(config);
-       console.log('Archiver Service attached');
+       console.log('ipfs-main:Archiver Service attached');
      }
      return;
   };

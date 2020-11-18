@@ -55,11 +55,11 @@
 
   const _storeDB = async function(msg) {
     if(historydb == null) {
-      console.log('_storeDB: null');
+      console.log('ipfs:_storeDB: null');
       return;
     }
     if(typeof msg == 'undefined') {
-        console.log('_storeDB: msg typeof undefined');
+        console.log('ipfs:_storeDB: msg typeof undefined');
       return;
     }
     if(typeof msg.community == 'undefined') {
@@ -68,12 +68,12 @@
           uuid: msg.meterinfo.meterId
         };
       }
-      console.log('_storeDB: missing community');
+      console.log('ipfs:_storeDB: missing community');
     }
-    console.log('_storeDB start',historydb.length);
+    console.log('ipfs:_storeDB start',historydb.length);
     try {
       if(! historydb.writable)  {
-        console.log('_storeDB:Not writable');
+        console.log('ipfs:_storeDB:Not writable');
         return;
       }
         let historyItem = {
@@ -89,11 +89,11 @@
         } else {
           historydb.append(historyItem);
         }
-        console.log('_storeDB end',historydb.length);
+        console.log(ipfs:'_storeDB end',historydb.length);
         historydb.flush();
         return '';
     } catch(e) {
-      console.log('_storeDB',e);
+      console.log('ipfs:_storeDB',e);
       return;
     }
   }
@@ -106,7 +106,7 @@
       if(typeof msg.community !== 'undefined') {
         alias = msg.community.uuid;
       }
-      console.log('Publish as alias',alias);
+      console.log('ipfs:Publish as alias',alias);
       let history = await _storeDB(msg);
 
       const stats = await ipfs.add({path:'/msg' + alias,content:JSON.stringify(msg)});
@@ -143,7 +143,7 @@
       parentPort.postMessage({ 'msgcids':msgcids,'history':await _getDBItems(), status: 'New' });
       return;
     } catch(e) {
-      console.log('_publishMsg',e);
+      console.log('ipfs:_publishMsg',e);
       return;
     }
   }
@@ -287,7 +287,7 @@
             }
           } catch(e) {
             timeouts[msg.from] = new Date().getTime();
-            console.log('Timeout List',timeouts);
+            console.log('ipfs:Timeout List',timeouts);
           }
         }
 
@@ -300,7 +300,7 @@
         }
 
         if(typeof json.broadcast !== 'undefined') {
-          console.log('Broadcast from',msg.from);
+          console.log('ipfs:Broadcast from',msg.from);
           const ipfsPath = '/ipfs/'+json.broadcast;
           let content = '';
           try {
@@ -321,7 +321,7 @@
               }
           } catch(e) {
             timeouts[msg.from] = new Date().getTime();
-            console.log('Timeout List',timeouts,e);
+            console.log('ipfs:Timeout List',timeouts,e);
           }
 
         }
@@ -334,7 +334,7 @@
       if(typeof config.purgeage !== 'undefined') {
         PURGE_AGE = config.purgeage;
       }
-      console.log('Initialize personal IPFS repository');
+      console.log('ipfs:Initialize personal IPFS repository');
       const stats = await ipfs.files.stat("/",{hash:true});
       const lhash = await ipfs.name.publish('/ipfs/'+stats.cid.toString());
       const www = await ipfs.files.mkdir('/www',{parents:true});
@@ -342,7 +342,6 @@
 
       await _getDBItems();
       await _patchStatics();
-      console.log('Init finished');
     } catch(e) {
       console.log(e);
     }
