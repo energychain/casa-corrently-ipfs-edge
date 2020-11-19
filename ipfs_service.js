@@ -89,7 +89,7 @@
         } else {
           historydb.append(historyItem);
         }
-        console.log(ipfs:'_storeDB end',historydb.length);
+        console.log('ipfs:_storeDB end',historydb.length);
         historydb.flush();
         return '';
     } catch(e) {
