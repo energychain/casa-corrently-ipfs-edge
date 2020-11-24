@@ -82,7 +82,9 @@
           stats:{}
         };
         for (const [key, value] of Object.entries(msg.stats)) {
+          if(typeof value !== 'undefined') {
               historyItem.stats[key] = value.energyPrice_kwh;
+          }
         }
         if(historydb.length >0 ) {
           historydb.append(historyItem);
