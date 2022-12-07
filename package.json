@@ -37,7 +37,7 @@
     "casa-corrently-ipfs-bridge": "^1.0.2",
     "glob": "^7.1.6",
     "hypercore": "^9.5.6",
-    "ipfs": "^0.50.2",
+    "ipfs": "^0.65.0",
     "ipfs-http-client": "^47.0.1",
     "multiaddr": "^8.0.0"
   }
